@@ -3,40 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>S-Meter Pro RX — Completo</title>
+  <title>S-Meter Pro RX — Guardia IA</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background: #060b14; color: #e2e8f0;
-      font-family: system-ui, -apple-system, sans-serif;
-      padding: 10px; min-height: 100dvh;
-    }
+    body { background: #060b14; color: #e2e8f0; font-family: system-ui, -apple-system, sans-serif; padding: 10px; min-height: 100dvh; }
     .wrap { max-width: 960px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
-    .card {
-      background: #0f172a; border: 1px solid #1e293b;
-      border-radius: 12px; padding: 12px;
-    }
+    .card { background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 12px; }
     .top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
     .title { font-weight: 800; font-size: 1.05rem; color: #38bdf8; }
     .clock-box { text-align: right; font-family: monospace; }
     .utc { font-size: 1.35rem; font-weight: 800; color: #22c55e; }
     .sub { font-size: 0.76rem; color: #94a3b8; }
-    .wx-bar {
-      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;
-      margin-top: 8px; padding-top: 8px; border-top: 1px solid #1e293b;
-      font-size: 0.8rem; color: #cbd5e1;
-    }
+    .wx-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #1e293b; font-size: 0.8rem; color: #cbd5e1; }
     .row { display: flex; flex-wrap: wrap; gap: 8px; }
-    button, .file-btn {
-      flex: 1; min-width: 110px; padding: 11px 10px; border: none;
-      border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer;
-      text-align: center; display: inline-flex; align-items: center; justify-content: center;
-      text-decoration: none;
-    }
+    button, .file-btn { flex: 1; min-width: 110px; padding: 11px 10px; border: none; border-radius: 8px; font-weight: 700; font-size: 0.84rem; cursor: pointer; text-align: center; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
     .btn-mic { background: #22c55e; color: #052e16; }
     .btn-mic.active { background: #ef4444; color: #fff; }
     .btn-guard { background: #1e293b; color: #cbd5e1; border: 1px solid #334155; }
     .btn-guard.active { background: #f59e0b; color: #1c1917; border-color: #f59e0b; }
+    .btn-vox { background: #1e293b; color: #a7f3d0; border: 1px solid #059669; }
+    .btn-vox.active { background: #10b981; color: #022c22; border-color: #10b981; }
     .btn-rec { background: #7f1d1d; color: #fecaca; border: 1px solid #ef4444; }
     .btn-rec.active { background: #ef4444; color: #fff; animation: pulse 1.2s infinite; }
     .btn-sec { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; }
@@ -44,11 +30,7 @@
     .btn-qrz { background: #065f46; color: #a7f3d0; border: 1px solid #10b981; }
     .btn-sm { flex: 0 1 auto; min-width: auto; padding: 6px 10px; font-size: 0.75rem; }
     @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.65; } }
-    .status {
-      font-family: monospace; font-size: 0.78rem; color: #94a3b8;
-      background: #020617; padding: 8px 10px; border-radius: 6px;
-      border-left: 3px solid #334155; margin-top: 8px;
-    }
+    .status { font-family: monospace; font-size: 0.78rem; color: #94a3b8; background: #020617; padding: 8px 10px; border-radius: 6px; border-left: 3px solid #334155; margin-top: 8px; }
     .status.ok { border-left-color: #22c55e; color: #86efac; }
     .status.err { border-left-color: #ef4444; color: #fca5a5; }
     .grid2 { display: grid; grid-template-columns: 1fr; gap: 10px; }
@@ -62,22 +44,15 @@
     @media (min-width: 480px) { .sliders { grid-template-columns: 1fr 1fr 1fr; } }
     .sl-item label { display: flex; justify-content: space-between; font-size: 0.75rem; color: #cbd5e1; margin-bottom: 3px; }
     input[type=range] { width: 100%; accent-color: #38bdf8; }
-    input[type=text], input[type=password], select, textarea {
-      width: 100%; background: #020617; color: #f8fafc; border: 1px solid #334155;
-      border-radius: 7px; padding: 8px 10px; font-size: 0.88rem; font-family: inherit;
-    }
-    textarea { min-height: 85px; resize: vertical; font-family: monospace; font-size: 0.82rem; }
+    input[type=text], input[type=password], select, textarea { width: 100%; background: #020617; color: #f8fafc; border: 1px solid #334155; border-radius: 7px; padding: 8px 10px; font-size: 0.88rem; font-family: inherit; }
+    textarea { min-height: 110px; resize: vertical; font-family: monospace; font-size: 0.82rem; }
     .led-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 0.82rem; font-weight: 700; margin-top: 8px; }
     .led-wrap { display: flex; align-items: center; gap: 8px; }
     .led { width: 12px; height: 12px; border-radius: 50%; background: #334155; }
     .led.on { background: #22c55e; box-shadow: 0 0 10px #22c55e; }
     audio { width: 100%; height: 38px; margin-top: 8px; }
     .log-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
-    .call-info {
-      margin-top: 8px; padding: 10px; border-radius: 8px;
-      background: #020617; border: 1px solid #1e3a8a;
-      display: flex; flex-direction: column; gap: 6px; font-size: 0.82rem;
-    }
+    .call-info { margin-top: 8px; padding: 10px; border-radius: 8px; background: #020617; border: 1px solid #1e3a8a; display: flex; flex-direction: column; gap: 6px; font-size: 0.82rem; }
     .call-info-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
     .call-badge { font-family: monospace; font-weight: 800; color: #38bdf8; font-size: 0.95rem; }
     .call-dist { font-family: monospace; color: #facc15; font-weight: 700; }
@@ -89,12 +64,11 @@
 </head>
 <body>
 <div class="wrap">
-  <!-- ENCABEZADO, RELOJ UTC Y CLIMA -->
   <div class="card">
     <div class="top">
       <div>
         <div class="title">S-Meter Pro RX</div>
-        <div class="sub">Monitor de Guardia, Reportes RS/RST &amp; QSO</div>
+        <div class="sub">Monitor de Guardia, Reportes RS/RST &amp; Auto-IA</div>
       </div>
       <div class="clock-box">
         <div class="utc" id="utcTime">--:--:-- UTC</div>
@@ -107,28 +81,21 @@
     </div>
   </div>
 
-  <!-- CONTROLES PRINCIPALES -->
   <div class="card">
     <div class="row">
       <button id="btnMic" class="btn-mic">Activar Micrófono</button>
       <button id="btnGuard" class="btn-guard">Modo Guardia: OFF</button>
+      <button id="btnAutoVox" class="btn-vox">Auto-Transc. Squelch: OFF</button>
       <button id="btnRec" class="btn-rec">Grabar QSO</button>
-      <label class="file-btn btn-sec">
-        Subir Audio
-        <input id="fileInput" type="file" accept="audio/*" class="hidden" />
-      </label>
+      <label class="file-btn btn-sec">Subir Audio<input id="fileInput" type="file" accept="audio/*" class="hidden" /></label>
     </div>
     <div id="status" class="status">Listo. Toca "Activar Micrófono" o "Subir Audio".</div>
     <div class="led-bar">
-      <div class="led-wrap">
-        <div id="sqLed" class="led"></div>
-        <span id="sqText">SQUELCH CERRADO</span>
-      </div>
+      <div class="led-wrap"><div id="sqLed" class="led"></div><span id="sqText">SQUELCH CERRADO</span></div>
       <span id="recTimer" class="sub" style="font-family:monospace;color:#f87171;"></span>
     </div>
   </div>
 
-  <!-- S-METER + VISUALIZADORES -->
   <div class="grid2">
     <div class="card">
       <canvas id="meterCanvas" height="170"></canvas>
@@ -137,7 +104,6 @@
         <div><div class="big-rs" id="valRS">R1 S0</div><div class="lbl">REPORTE</div></div>
         <div><div class="big-rs" id="valDb" style="color:#94a3b8;font-size:1.15rem;">-90 dB</div><div class="lbl">NIVEL</div></div>
       </div>
-
       <div class="row" style="margin-bottom:8px;">
         <button id="btnCalS1" class="btn-sec btn-sm" style="flex:1;">Fijar Piso (S1)</button>
         <button id="btnCalS9" class="btn-sec btn-sm" style="flex:1;">Calibrar S9 Aquí</button>
@@ -146,23 +112,12 @@
           <option value="RST">CW (RST)</option>
         </select>
       </div>
-
       <div class="sliders">
-        <div class="sl-item">
-          <label><span>Ganancia</span><span id="lblGain">2.0x</span></label>
-          <input id="slGain" type="range" min="0.5" max="8" step="0.5" value="2" />
-        </div>
-        <div class="sl-item">
-          <label><span>Base Offset</span><span id="lblOffset">0 dB</span></label>
-          <input id="slOffset" type="range" min="-30" max="30" step="1" value="0" />
-        </div>
-        <div class="sl-item">
-          <label><span>Squelch</span><span id="lblSq">S3</span></label>
-          <input id="slSq" type="range" min="1" max="9" step="1" value="3" />
-        </div>
+        <div class="sl-item"><label><span>Ganancia</span><span id="lblGain">2.0x</span></label><input id="slGain" type="range" min="0.5" max="8" step="0.5" value="2" /></div>
+        <div class="sl-item"><label><span>Base Offset</span><span id="lblOffset">0 dB</span></label><input id="slOffset" type="range" min="-30" max="30" step="1" value="0" /></div>
+        <div class="sl-item"><label><span>Squelch</span><span id="lblSq">S3</span></label><input id="slSq" type="range" min="1" max="9" step="1" value="3" /></div>
       </div>
     </div>
-
     <div class="card" style="display:flex;flex-direction:column;gap:8px;">
       <div class="lbl">FORMA DE ONDA (OSCILOSCOPIO)</div>
       <canvas id="waveCanvas" height="95"></canvas>
@@ -171,32 +126,27 @@
     </div>
   </div>
 
-  <!-- REPRODUCTOR Y TRANSCRIPCIÓN -->
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
-      <span class="lbl">AUDIO GRABADO / SUBIDO Y TRANSCRIPCIÓN</span>
+      <span class="lbl">AUDIO Y TRANSCRIPCIÓN (GEMINI 3.8 FLASH)</span>
       <a id="btnDownload" class="hidden" style="color:#38bdf8;font-size:0.78rem;font-weight:700;text-decoration:none;">Descargar Audio</a>
     </div>
     <audio id="audioPlayer" controls playsinline></audio>
-
     <div class="row" style="margin-top:8px;">
-      <button id="btnLiveTrans" class="btn-sec btn-sm" style="flex:1;">Transcribir en Vivo (Chrome)</button>
       <button id="btnAiTrans" class="btn-pri btn-sm" style="flex:1;">Transcribir Audio (IA Gemini)</button>
       <button id="btnCopyTrans" class="btn-sec btn-sm">Copiar</button>
+      <button id="btnClearTrans" class="btn-sec btn-sm">Limpiar</button>
     </div>
-
     <details style="margin-top:8px;">
-      <summary class="sub" style="cursor:pointer;">Configurar API Key de Gemini (solo si usas IA para audios grabados/subidos)</summary>
+      <summary class="sub" style="cursor:pointer;">Configurar API Key de Gemini</summary>
       <div class="row" style="margin-top:6px;">
         <input id="apiKeyInput" type="password" placeholder="Pega tu API Key de Google AI Studio (AIza...)" />
         <button id="btnSaveKey" class="btn-sec btn-sm">Guardar Key</button>
       </div>
     </details>
-
-    <textarea id="transText" style="margin-top:8px;" placeholder="Aquí aparecerá la transcripción del QSO..."></textarea>
+    <textarea id="transText" style="margin-top:8px;" placeholder="Aquí aparecerán las transcripciones automáticas por Squelch o manuales..."></textarea>
   </div>
 
-  <!-- MINI LOG UTC CON BUSCADOR DE INDICATIVOS Y QRZ -->
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;">
       <span class="lbl">LIBRO DE GUARDIA / BUSCADOR DE INDICATIVOS</span>
@@ -205,134 +155,87 @@
         <button id="btnClearLog" class="btn-sec btn-sm" style="color:#f87171;">Limpiar</button>
       </div>
     </div>
-
     <div class="log-inputs">
       <input id="inCall" type="text" placeholder="Indicativo (ej: LU1XQD)" style="text-transform:uppercase;" />
       <input id="inFreq" type="text" placeholder="Frec / Banda (ej: 7.100 LSB)" />
     </div>
-
-    <!-- PANEL AUTOMÁTICO DE INFO DEL INDICATIVO + DISTANCIA + QRZ -->
     <div id="callInfoBox" class="call-info hidden">
-      <div class="call-info-top">
-        <span class="call-badge" id="ciCall">—</span>
-        <span class="call-dist" id="ciDist">—</span>
-      </div>
+      <div class="call-info-top"><span class="call-badge" id="ciCall">—</span><span class="call-dist" id="ciDist">—</span></div>
       <div id="ciLoc" style="color:#e2e8f0;">—</div>
       <div class="row" style="margin-top:2px;">
         <a id="btnQrz" href="#" target="_blank" rel="noopener" class="btn-qrz btn-sm" style="flex:1;">Abrir ficha en QRZ.com</a>
         <a id="btnHamQth" href="#" target="_blank" rel="noopener" class="btn-sec btn-sm" style="flex:1;">Ver en HamQTH</a>
       </div>
     </div>
-
     <div class="row" style="margin-top:8px;">
       <input id="inNotes" type="text" placeholder="Notas / QTH / Nombre..." style="flex:2;" />
       <button id="btnSaveLog" class="btn-pri" style="flex:1;">Guardar QSO UTC</button>
     </div>
-
     <div id="logList" class="log-list"></div>
   </div>
 </div>
 
 <script>
-// 1. RELOJ UTC INDEPENDIENTE
+// 1. RELOJ UTC
 function updateClock() {
-  const now = new Date();
-  const pad = n => String(n).padStart(2, '0');
-  const uH = pad(now.getUTCHours()), uM = pad(now.getUTCMinutes()), uS = pad(now.getUTCSeconds());
-  const uD = `${now.getUTCFullYear()}-${pad(now.getUTCMonth()+1)}-${pad(now.getUTCDate())}`;
-  const lT = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-  document.getElementById('utcTime').textContent = `${uH}:${uM}:${uS} UTC`;
-  document.getElementById('utcDate').textContent = `${uD} | Local ${lT}`;
+  const now = new Date(), pad = n => String(n).padStart(2, '0');
+  document.getElementById('utcTime').textContent = `${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())} UTC`;
+  document.getElementById('utcDate').textContent = `${now.getUTCFullYear()}-${pad(now.getUTCMonth()+1)}-${pad(now.getUTCDate())} | Local ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
 }
 setInterval(updateClock, 250);
 updateClock();
 
-// 2. QTH PROPIO Y CLIMA EN VIVO (OPEN-METEO)
+// 2. CLIMA EN VIVO
 let myQth = { lat: -54.8019, lon: -68.3030, name: 'Ushuaia (QTH)' };
-const wxCodes = {
-  0:'Despejado', 1:'Poco nuboso', 2:'Parcialmente nublado', 3:'Nublado',
-  45:'Niebla', 48:'Niebla helada', 51:'Llovizna débil', 53:'Llovizna',
-  61:'Lluvia débil', 63:'Lluvia', 65:'Lluvia fuerte', 71:'Nieve débil',
-  73:'Nieve', 75:'Nieve fuerte', 80:'Chubascos', 95:'Tormenta'
-};
-
+const wxCodes = { 0:'Despejado', 1:'Poco nuboso', 2:'Parc. nublado', 3:'Nublado', 45:'Niebla', 51:'Llovizna', 61:'Lluvia', 71:'Nieve', 80:'Chubascos', 95:'Tormenta' };
 async function loadWeather() {
   const el = document.getElementById('wxText');
   try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${myQth.lat}&longitude=${myQth.lon}&current=temperature_2m,wind_speed_10m,wind_direction_10m,weather_code&timezone=auto`;
-    const r = await fetch(url);
-    const d = await r.json();
-    const c = d.current;
-    const desc = wxCodes[c.weather_code] || 'Variable';
-    el.innerHTML = `<b>${myQth.name}:</b> ${Math.round(c.temperature_2m)}°C • ${desc} • Viento ${Math.round(c.wind_speed_10m)} km/h (${c.wind_direction_10m}°)`;
-  } catch (e) {
-    el.textContent = 'Clima: sin conexión (verifique internet).';
-  }
+    const c = (await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${myQth.lat}&longitude=${myQth.lon}&current=temperature_2m,wind_speed_10m,wind_direction_10m,weather_code&timezone=auto`)).json()).current;
+    el.innerHTML = `<b>${myQth.name}:</b> ${Math.round(c.temperature_2m)}°C • ${wxCodes[c.weather_code] || 'Variable'} • Viento ${Math.round(c.wind_speed_10m)} km/h (${c.wind_direction_10m}°)`;
+  } catch (e) { el.textContent = 'Clima: sin conexión.'; }
 }
 loadWeather();
 setInterval(loadWeather, 600000);
-
 document.getElementById('btnGps').addEventListener('click', () => {
   if (!navigator.geolocation) return;
-  document.getElementById('wxText').textContent = 'Obteniendo GPS...';
   navigator.geolocation.getCurrentPosition(pos => {
     myQth = { lat: pos.coords.latitude, lon: pos.coords.longitude, name: 'Mi GPS' };
-    loadWeather();
-    lookupCallsign(document.getElementById('inCall').value);
-  }, () => {
-    document.getElementById('wxText').textContent = 'GPS denegado. Usando Ushuaia.';
-    loadWeather();
-  });
+    loadWeather(); lookupCallsign(document.getElementById('inCall').value);
+  }, () => loadWeather());
 });
 
-// 3. BUSCADOR DE INDICATIVOS (ARGENTINA POR LETRA + DXCC + DISTANCIA Y AZIMUT)
+// 3. BUSCADOR DE INDICATIVOS + DISTANCIA + QRZ
 const arProvinces = {
-  A:['CABA',-34.60,-58.38], B:['CABA',-34.60,-58.38], C:['CABA',-34.60,-58.38],
-  D:['Buenos Aires',-34.92,-57.95], E:['Buenos Aires',-34.92,-57.95],
-  F:['Santa Fe',-31.63,-60.70], G:['Chaco',-27.45,-58.99], H:['Córdoba',-31.42,-64.18],
-  I:['Misiones',-27.36,-55.90], J:['Entre Ríos',-31.73,-60.52], K:['Tucumán',-26.82,-65.22],
-  L:['Corrientes',-27.47,-58.83], M:['Mendoza',-32.89,-68.84], N:['Santiago del Estero',-27.79,-64.26],
-  O:['Salta',-24.78,-65.41], P:['San Juan',-31.53,-68.53], Q:['San Luis',-33.30,-66.33],
-  R:['Catamarca',-28.47,-65.78], S:['La Rioja',-29.41,-66.85], T:['Jujuy',-24.18,-65.30],
-  U:['La Pampa',-36.62,-64.29], V:['Río Negro',-40.81,-63.00], W:['Chubut',-43.30,-65.10],
-  Y:['Neuquén',-38.95,-68.06], Z:['Antártida Argentina / Islas Atl. Sur',-64.24,-56.62]
+  A:['CABA',-34.60,-58.38], B:['CABA',-34.60,-58.38], C:['CABA',-34.60,-58.38], D:['Buenos Aires',-34.92,-57.95], E:['Buenos Aires',-34.92,-57.95],
+  F:['Santa Fe',-31.63,-60.70], G:['Chaco',-27.45,-58.99], H:['Córdoba',-31.42,-64.18], I:['Misiones',-27.36,-55.90], J:['Entre Ríos',-31.73,-60.52],
+  K:['Tucumán',-26.82,-65.22], L:['Corrientes',-27.47,-58.83], M:['Mendoza',-32.89,-68.84], N:['Santiago del Estero',-27.79,-64.26], O:['Salta',-24.78,-65.41],
+  P:['San Juan',-31.53,-68.53], Q:['San Luis',-33.30,-66.33], R:['Catamarca',-28.47,-65.78], S:['La Rioja',-29.41,-66.85], T:['Jujuy',-24.18,-65.30],
+  U:['La Pampa',-36.62,-64.29], V:['Río Negro',-40.81,-63.00], W:['Chubut',-43.30,-65.10], Y:['Neuquén',-38.95,-68.06], Z:['Antártida / Islas Atl. Sur',-64.24,-56.62]
 };
-
 const dxPrefixes = [
-  ['VP8','Islas Malvinas / Atl. Sur',-51.70,-57.85],
-  ['KC4','Antártida (EE.UU.)',-77.85,166.67],
-  ['CE','Chile',-33.45,-70.66], ['CA','Chile',-33.45,-70.66], ['CB','Chile',-33.45,-70.66], ['XQ','Chile',-33.45,-70.66],
+  ['VP8','Islas Malvinas',-51.70,-57.85], ['KC4','Antártida (EE.UU.)',-77.85,166.67], ['CE','Chile',-33.45,-70.66], ['CA','Chile',-33.45,-70.66],
   ['CX','Uruguay',-34.90,-56.16], ['PY','Brasil',-15.79,-47.88], ['PP','Brasil',-15.79,-47.88], ['PU','Brasil',-23.55,-46.63],
-  ['ZP','Paraguay',-25.26,-57.57], ['CP','Bolivia',-16.50,-68.15], ['OA','Perú',-12.04,-77.04],
-  ['HC','Ecuador',-0.18,-78.47], ['HK','Colombia',4.71,-74.07], ['YV','Venezuela',10.48,-66.90],
-  ['XE','México',19.43,-99.13], ['EA','España',40.42,-3.70], ['CT','Portugal',38.72,-9.14],
-  ['DL','Alemania',52.52,13.40], ['F','Francia',48.86,2.35], ['G','Reino Unido',51.51,-0.13],
-  ['I','Italia',41.90,12.50], ['JA','Japón',35.68,139.65], ['VK','Australia',-33.87,151.21],
-  ['ZL','Nueva Zelanda',-41.29,174.78], ['ZS','Sudáfrica',-25.75,28.19],
-  ['W','Estados Unidos',39.83,-98.58], ['K','Estados Unidos',39.83,-98.58], ['N','Estados Unidos',39.83,-98.58], ['AA','Estados Unidos',39.83,-98.58],
-  ['VE','Canadá',45.42,-75.70], ['VA','Canadá',45.42,-75.70]
+  ['ZP','Paraguay',-25.26,-57.57], ['CP','Bolivia',-16.50,-68.15], ['OA','Perú',-12.04,-77.04], ['HC','Ecuador',-0.18,-78.47],
+  ['HK','Colombia',4.71,-74.07], ['YV','Venezuela',10.48,-66.90], ['XE','México',19.43,-99.13], ['EA','España',40.42,-3.70],
+  ['DL','Alemania',52.52,13.40], ['F','Francia',48.86,2.35], ['G','Reino Unido',51.51,-0.13], ['I','Italia',41.90,12.50],
+  ['JA','Japón',35.68,139.65], ['VK','Australia',-33.87,151.21], ['ZL','Nueva Zelanda',-41.29,174.78], ['ZS','Sudáfrica',-25.75,28.19],
+  ['W','Estados Unidos',39.83,-98.58], ['K','Estados Unidos',39.83,-98.58], ['N','Estados Unidos',39.83,-98.58], ['VE','Canadá',45.42,-75.70]
 ];
-
 function calcDistBearing(lat1, lon1, lat2, lon2) {
   const R = 6371, toRad = d => d * Math.PI / 180, toDeg = r => r * 180 / Math.PI;
   const dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
   const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
   const km = Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
-  const y = Math.sin(dLon) * Math.cos(toRad(lat2));
-  const x = Math.cos(toRad(lat1))*Math.sin(toRad(lat2)) - Math.sin(toRad(lat1))*Math.cos(toRad(lat2))*Math.cos(dLon);
-  const az = (Math.round(toDeg(Math.atan2(y, x))) + 360) % 360;
-  return { km, az };
+  const y = Math.sin(dLon) * Math.cos(toRad(lat2)), x = Math.cos(toRad(lat1))*Math.sin(toRad(lat2)) - Math.sin(toRad(lat1))*Math.cos(toRad(lat2))*Math.cos(dLon);
+  return { km, az: (Math.round(toDeg(Math.atan2(y, x))) + 360) % 360 };
 }
-
 function lookupCallsign(raw) {
   const call = (raw || '').trim().toUpperCase().replace(/[^A-Z0-9/]/g, '');
   const box = document.getElementById('callInfoBox');
   if (call.length < 3) { box.classList.add('hidden'); return; }
-
   const baseCall = call.split('/')[0];
   let country = 'Prefijo desconocido', region = '', lat = null, lon = null;
-
-  // Chequeo Argentina (LU, LW, LO-LT, AY, AZ, L2-L9)
   const arMatch = baseCall.match(/^(LU|LW|LO|LP|LQ|LR|LS|LT|AY|AZ|L[2-9])(\d)([A-Z])([A-Z]?)/);
   if (arMatch) {
     country = 'Argentina';
@@ -340,210 +243,206 @@ function lookupCallsign(raw) {
     if (l1 === 'X') {
       if (l2 >= 'P' && l2 <= 'Z') { region = 'Tierra del Fuego (XP–XZ)'; lat = -54.80; lon = -68.30; }
       else { region = 'Santa Cruz (XA–XO)'; lat = -51.62; lon = -69.22; }
-    } else if (arProvinces[l1]) {
-      [region, lat, lon] = arProvinces[l1];
-    } else {
-      region = 'Provincia no identificada';
-    }
+    } else if (arProvinces[l1]) { [region, lat, lon] = arProvinces[l1]; }
   } else {
     for (const [pref, name, pLat, pLon] of dxPrefixes) {
       if (baseCall.startsWith(pref)) { country = name; lat = pLat; lon = pLon; break; }
     }
   }
-
   document.getElementById('ciCall').textContent = call;
   document.getElementById('ciLoc').textContent = region ? `${country} — ${region}` : country;
-  if (lat !== null && lon !== null) {
-    const { km, az } = calcDistBearing(myQth.lat, myQth.lon, lat, lon);
-    document.getElementById('ciDist').textContent = `~${km.toLocaleString('es-AR')} km • Az ${az}°`;
-  } else {
-    document.getElementById('ciDist').textContent = 'Distancia N/D';
-  }
+  if (lat !== null) {
+    const db = calcDistBearing(myQth.lat, myQth.lon, lat, lon);
+    document.getElementById('ciDist').textContent = `~${db.km.toLocaleString('es-AR')} km • Az ${db.az}°`;
+  } else { document.getElementById('ciDist').textContent = 'Distancia N/D'; }
   document.getElementById('btnQrz').href = `https://www.qrz.com/db/${encodeURIComponent(baseCall)}`;
   document.getElementById('btnHamQth').href = `https://www.hamqth.com/${encodeURIComponent(baseCall)}`;
   box.classList.remove('hidden');
 }
+document.getElementById('inCall').addEventListener('input', e => lookupCallsign(e.target.value));
 
-document.getElementById('inCall').addEventListener('input', (e) => lookupCallsign(e.target.value));
-
-// 4. ESTADO GLOBAL AUDIO Y LOG
+// 4. AUDIO, S-METER SUAVE Y AUTO-TRANSCRIPCIÓN POR SQUELCH
 let audioCtx = null, stream = null, analyser = null, gainNode = null, rafId = null;
 let fileSourceNode = null, mediaRecorder = null, recChunks = [], recInterval = null, recSec = 0;
+let autoVoxOn = false, voxRecorder = null, voxChunks = [], voxSilenceTimer = null, voxStartTime = 0, voxPeakRS = '';
 let currentAudioBlob = null, wakeLock = null, guardOn = false;
 let smoothS = 0, peakS = 0, peakHoldFrames = 0;
 let currentSLabel = 'S0', currentRS = 'R1 S0', currentDb = -90, rawDbNoOffset = -90;
 let logs = [];
 try { logs = JSON.parse(localStorage.getItem('smeter_logs_v2') || '[]'); } catch(e) {}
 
-const statusEl = document.getElementById('status');
-const btnMic = document.getElementById('btnMic');
-const btnGuard = document.getElementById('btnGuard');
-const btnRec = document.getElementById('btnRec');
-const slGain = document.getElementById('slGain');
-const slOffset = document.getElementById('slOffset');
-const slSq = document.getElementById('slSq');
-const selMode = document.getElementById('selMode');
-const audioPlayer = document.getElementById('audioPlayer');
-const btnDownload = document.getElementById('btnDownload');
-const transText = document.getElementById('transText');
+const statusEl = document.getElementById('status'), btnMic = document.getElementById('btnMic');
+const btnGuard = document.getElementById('btnGuard'), btnAutoVox = document.getElementById('btnAutoVox');
+const btnRec = document.getElementById('btnRec'), slGain = document.getElementById('slGain');
+const slOffset = document.getElementById('slOffset'), slSq = document.getElementById('slSq');
+const selMode = document.getElementById('selMode'), audioPlayer = document.getElementById('audioPlayer');
+const btnDownload = document.getElementById('btnDownload'), transText = document.getElementById('transText');
+const apiKeyInput = document.getElementById('apiKeyInput');
+try { apiKeyInput.value = localStorage.getItem('gemini_api_key') || ''; } catch(e) {}
 
-function setStatus(msg, cls='') {
-  statusEl.textContent = msg;
-  statusEl.className = 'status ' + cls;
+function setStatus(msg, cls='') { statusEl.textContent = msg; statusEl.className = 'status ' + cls; }
+function getRecOpts() {
+  if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) return { mimeType: 'audio/webm;codecs=opus' };
+  if (MediaRecorder.isTypeSupported('audio/webm')) return { mimeType: 'audio/webm' };
+  if (MediaRecorder.isTypeSupported('audio/mp4')) return { mimeType: 'audio/mp4' };
+  return {};
 }
-
 function ensureAudioCtx() {
-  if (!audioCtx) {
-    const AC = window.AudioContext || window.webkitAudioContext;
-    audioCtx = new AC();
-  }
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   if (audioCtx.state === 'suspended') audioCtx.resume();
-  if (!gainNode) {
-    gainNode = audioCtx.createGain();
-    gainNode.gain.value = parseFloat(slGain.value);
-  }
-  if (!analyser) {
-    analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 1024;
-    analyser.smoothingTimeConstant = 0.72;
-  }
+  if (!gainNode) { gainNode = audioCtx.createGain(); gainNode.gain.value = parseFloat(slGain.value); }
+  if (!analyser) { analyser = audioCtx.createAnalyser(); analyser.fftSize = 1024; analyser.smoothingTimeConstant = 0.78; }
 }
 
-// 5. MICRÓFONO (ANDROID SAFE)
 btnMic.addEventListener('click', async () => {
   if (stream) { stopMic(); return; }
   try {
     setStatus('Solicitando permiso de micrófono...');
     stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     ensureAudioCtx();
-    const src = audioCtx.createMediaStreamSource(stream);
-    const mute = audioCtx.createGain();
+    const src = audioCtx.createMediaStreamSource(stream), mute = audioCtx.createGain();
     mute.gain.value = 0;
-    src.connect(gainNode);
-    gainNode.connect(analyser);
-    analyser.connect(mute);
-    mute.connect(audioCtx.destination);
-
-    btnMic.textContent = 'Detener Micrófono';
-    btnMic.classList.add('active');
+    src.connect(gainNode); gainNode.connect(analyser); analyser.connect(mute); mute.connect(audioCtx.destination);
+    btnMic.textContent = 'Detener Micrófono'; btnMic.classList.add('active');
     setStatus('Micrófono ACTIVO — Recibiendo audio en vivo', 'ok');
     if (!rafId) loop();
-  } catch (err) {
-    setStatus('Error de micrófono: ' + err.name + ' - ' + err.message, 'err');
-  }
+  } catch (err) { setStatus('Error: ' + err.name + ' - ' + err.message, 'err'); }
 });
 
 function stopMic() {
   if (mediaRecorder && mediaRecorder.state === 'recording') stopRecording();
+  if (voxRecorder && voxRecorder.state === 'recording') voxRecorder.stop();
   if (stream) stream.getTracks().forEach(t => t.stop());
-  stream = null;
-  btnMic.textContent = 'Activar Micrófono';
-  btnMic.classList.remove('active');
+  stream = null; btnMic.textContent = 'Activar Micrófono'; btnMic.classList.remove('active');
   setStatus('Micrófono detenido.');
 }
 
-// 6. SUBIR AUDIO
-document.getElementById('fileInput').addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  currentAudioBlob = file;
-  const url = URL.createObjectURL(file);
-  audioPlayer.src = url;
-  audioPlayer.load();
-  btnDownload.href = url;
-  btnDownload.download = file.name;
-  btnDownload.classList.remove('hidden');
+// AUTO-TRANSCRIPCIÓN POR SQUELCH (VOX IA)
+btnAutoVox.addEventListener('click', () => {
+  if (!autoVoxOn && !apiKeyInput.value.trim()) {
+    setStatus('Configura primero tu API Key de Gemini para usar Auto-Transcripción.', 'err'); return;
+  }
+  autoVoxOn = !autoVoxOn;
+  btnAutoVox.classList.toggle('active', autoVoxOn);
+  btnAutoVox.textContent = autoVoxOn ? 'Auto-Transc. Squelch: ON' : 'Auto-Transc. Squelch: OFF';
+  setStatus(autoVoxOn ? 'Auto-Transcripción por Squelch ACTIVA (esperando señal...)' : 'Auto-Transcripción desactivada.', autoVoxOn ? 'ok' : '');
+});
 
+function handleVoxSquelch(sqOpen) {
+  if (!autoVoxOn || !stream) return;
+  if (sqOpen) {
+    if (voxSilenceTimer) { clearTimeout(voxSilenceTimer); voxSilenceTimer = null; }
+    if (!voxRecorder || voxRecorder.state === 'inactive') {
+      voxChunks = []; voxStartTime = Date.now(); voxPeakRS = currentRS;
+      voxRecorder = new MediaRecorder(stream, getRecOpts());
+      voxRecorder.ondataavailable = e => { if (e.data.size > 0) voxChunks.push(e.data); };
+      voxRecorder.onstop = () => {
+        const dur = (Date.now() - voxStartTime) / 1000;
+        if (dur >= 1.5 && voxChunks.length) {
+          const blob = new Blob(voxChunks, { type: voxRecorder.mimeType || 'audio/webm' });
+          transcribeBlobWithGemini(blob, true, voxPeakRS);
+        }
+      };
+      voxRecorder.start();
+      document.getElementById('recTimer').textContent = 'AUTO-VOX REC';
+    }
+  } else if (voxRecorder && voxRecorder.state === 'recording' && !voxSilenceTimer) {
+    voxSilenceTimer = setTimeout(() => {
+      if (voxRecorder && voxRecorder.state === 'recording') voxRecorder.stop();
+      document.getElementById('recTimer').textContent = '';
+      voxSilenceTimer = null;
+    }, 2200);
+  }
+}
+
+async function transcribeBlobWithGemini(blob, appendMode = false, rsTag = '') {
+  const key = apiKeyInput.value.trim();
+  if (!key) { setStatus('Falta API Key de Gemini.', 'err'); return; }
+  setStatus(appendMode ? 'Auto-transcribiendo transmisión recibida...' : 'Transcribiendo con Gemini 3.8 Flash...');
+  try {
+    const b64 = await new Promise((res, rej) => { const r = new FileReader(); r.onloadend = () => res(r.result.split(',')[1]); r.onerror = rej; r.readAsDataURL(blob); });
+    const cleanMime = (blob.type || 'audio/webm').split(';')[0];
+    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(key)}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [
+        { text: 'Transcribe fielmente este audio de radioaficionados en español. Respeta indicativos, código fonético internacional, reportes RS/RST y códigos Q. Si solo hay ruido/estática sin voz, responde únicamente: [Ruido].' },
+        { inline_data: { mime_type: cleanMime, data: b64 } }
+      ] }] })
+    });
+    const data = await resp.json(), out = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    if (out) {
+      if (appendMode) {
+        if (out !== '[Ruido]') {
+          const utc = new Date().toISOString().slice(11, 19) + ' UTC';
+          transText.value = `[${utc} | ${rsTag}] ${out}\n` + transText.value;
+        }
+        setStatus('Auto-transcripción agregada. Escuchando...', 'ok');
+      } else {
+        transText.value = out;
+        setStatus('Transcripción IA completada.', 'ok');
+      }
+    } else setStatus('Error IA: ' + (data?.error?.message || 'Sin respuesta'), 'err');
+  } catch (err) { setStatus('Error IA: ' + err.message, 'err'); }
+}
+
+// 5. SUBIR AUDIO Y GRABACIÓN MANUAL
+document.getElementById('fileInput').addEventListener('change', e => {
+  const file = e.target.files[0]; if (!file) return;
+  currentAudioBlob = file; const url = URL.createObjectURL(file);
+  audioPlayer.src = url; audioPlayer.load();
+  btnDownload.href = url; btnDownload.download = file.name; btnDownload.classList.remove('hidden');
   ensureAudioCtx();
   if (!fileSourceNode) {
     fileSourceNode = audioCtx.createMediaElementSource(audioPlayer);
-    fileSourceNode.connect(gainNode);
-    gainNode.connect(analyser);
-    analyser.connect(audioCtx.destination);
+    fileSourceNode.connect(gainNode); gainNode.connect(analyser); analyser.connect(audioCtx.destination);
   }
   audioPlayer.play().catch(() => {});
-  setStatus('Reproduciendo audio cargado: ' + file.name, 'ok');
+  setStatus('Reproduciendo: ' + file.name, 'ok');
   if (!rafId) loop();
 });
 
-// 7. GRABADOR DE QSO
 btnRec.addEventListener('click', () => {
   if (mediaRecorder && mediaRecorder.state === 'recording') { stopRecording(); return; }
-  if (!stream) { setStatus('Primero activa el micrófono para grabar un QSO.', 'err'); return; }
+  if (!stream) { setStatus('Primero activa el micrófono para grabar.', 'err'); return; }
   recChunks = [];
-  let opts = {};
-  if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) opts = { mimeType: 'audio/webm;codecs=opus' };
-  else if (MediaRecorder.isTypeSupported('audio/webm')) opts = { mimeType: 'audio/webm' };
-  else if (MediaRecorder.isTypeSupported('audio/mp4')) opts = { mimeType: 'audio/mp4' };
-
-  mediaRecorder = new MediaRecorder(stream, opts);
+  mediaRecorder = new MediaRecorder(stream, getRecOpts());
   mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recChunks.push(e.data); };
   mediaRecorder.onstop = () => {
     currentAudioBlob = new Blob(recChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
     const url = URL.createObjectURL(currentAudioBlob);
-    audioPlayer.src = url;
-    audioPlayer.load();
-    btnDownload.href = url;
-    btnDownload.download = `QSO_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.webm`;
+    audioPlayer.src = url; audioPlayer.load();
+    btnDownload.href = url; btnDownload.download = `QSO_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.webm`;
     btnDownload.classList.remove('hidden');
     setStatus(`Grabación lista (${Math.round(currentAudioBlob.size/1024)} KB).`, 'ok');
   };
-  mediaRecorder.start();
-  recSec = 0;
-  document.getElementById('recTimer').textContent = 'REC 00:00';
+  mediaRecorder.start(); recSec = 0; document.getElementById('recTimer').textContent = 'REC 00:00';
   recInterval = setInterval(() => {
     recSec++;
-    const m = String(Math.floor(recSec/60)).padStart(2,'0');
-    const s = String(recSec%60).padStart(2,'0');
-    document.getElementById('recTimer').textContent = `REC ${m}:${s}`;
+    document.getElementById('recTimer').textContent = `REC ${String(Math.floor(recSec/60)).padStart(2,'0')}:${String(recSec%60).padStart(2,'0')}`;
   }, 1000);
-  btnRec.textContent = 'Detener Grabación';
-  btnRec.classList.add('active');
-  setStatus('Grabando QSO...', 'ok');
+  btnRec.textContent = 'Detener Grabación'; btnRec.classList.add('active'); setStatus('Grabando QSO...', 'ok');
 });
 
 function stopRecording() {
   if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
-  clearInterval(recInterval);
-  document.getElementById('recTimer').textContent = '';
-  btnRec.textContent = 'Grabar QSO';
-  btnRec.classList.remove('active');
+  clearInterval(recInterval); document.getElementById('recTimer').textContent = '';
+  btnRec.textContent = 'Grabar QSO'; btnRec.classList.remove('active');
 }
 
-// 8. CALIBRACIÓN Y GUARDIA
-slGain.addEventListener('input', () => {
-  document.getElementById('lblGain').textContent = parseFloat(slGain.value).toFixed(1) + 'x';
-  if (gainNode) gainNode.gain.value = parseFloat(slGain.value);
-});
-slOffset.addEventListener('input', () => {
-  const v = parseInt(slOffset.value, 10);
-  document.getElementById('lblOffset').textContent = (v > 0 ? '+' : '') + v + ' dB';
-});
-slSq.addEventListener('input', () => {
-  document.getElementById('lblSq').textContent = 'S' + slSq.value;
-});
-document.getElementById('btnCalS1').addEventListener('click', () => {
-  const needed = Math.max(-30, Math.min(30, Math.round(-70 - rawDbNoOffset)));
-  slOffset.value = needed; slOffset.dispatchEvent(new Event('input'));
-  setStatus(`Piso calibrado a S1 (Offset ${needed} dB).`, 'ok');
-});
-document.getElementById('btnCalS9').addEventListener('click', () => {
-  const needed = Math.max(-30, Math.min(30, Math.round(-22 - rawDbNoOffset)));
-  slOffset.value = needed; slOffset.dispatchEvent(new Event('input'));
-  setStatus(`Referencia calibrada a S9 (Offset ${needed} dB).`, 'ok');
-});
+// 6. CALIBRACIÓN, GUARDIA Y VISUALIZADORES
+slGain.addEventListener('input', () => { document.getElementById('lblGain').textContent = parseFloat(slGain.value).toFixed(1) + 'x'; if (gainNode) gainNode.gain.value = parseFloat(slGain.value); });
+slOffset.addEventListener('input', () => { const v = parseInt(slOffset.value, 10); document.getElementById('lblOffset').textContent = (v > 0 ? '+' : '') + v + ' dB'; });
+slSq.addEventListener('input', () => { document.getElementById('lblSq').textContent = 'S' + slSq.value; });
+document.getElementById('btnCalS1').addEventListener('click', () => { slOffset.value = Math.max(-30, Math.min(30, Math.round(-70 - rawDbNoOffset))); slOffset.dispatchEvent(new Event('input')); setStatus('Piso calibrado a S1.', 'ok'); });
+document.getElementById('btnCalS9').addEventListener('click', () => { slOffset.value = Math.max(-30, Math.min(30, Math.round(-22 - rawDbNoOffset))); slOffset.dispatchEvent(new Event('input')); setStatus('Referencia calibrada a S9.', 'ok'); });
+
 btnGuard.addEventListener('click', async () => {
-  guardOn = !guardOn;
-  btnGuard.classList.toggle('active', guardOn);
+  guardOn = !guardOn; btnGuard.classList.toggle('active', guardOn);
   btnGuard.textContent = guardOn ? 'Modo Guardia: ON' : 'Modo Guardia: OFF';
-  if (guardOn && 'wakeLock' in navigator) {
-    try { wakeLock = await navigator.wakeLock.request('screen'); } catch(e) {}
-  } else if (wakeLock) {
-    try { await wakeLock.release(); wakeLock = null; } catch(e) {}
-  }
+  if (guardOn && 'wakeLock' in navigator) { try { wakeLock = await navigator.wakeLock.request('screen'); } catch(e) {} }
+  else if (wakeLock) { try { await wakeLock.release(); wakeLock = null; } catch(e) {} }
 });
 
-// 9. DIBUJO S-METER, ONDA Y ESPECTRO
 const mCan = document.getElementById('meterCanvas'), mCtx = mCan.getContext('2d');
 const wCan = document.getElementById('waveCanvas'), wCtx = wCan.getContext('2d');
 const fCan = document.getElementById('fftCanvas'), fCtx = fCan.getContext('2d');
@@ -555,23 +454,19 @@ function drawMeter(sVal, pVal) {
   mCtx.lineWidth = 10;
   mCtx.beginPath(); mCtx.arc(cx, cy, r, Math.PI, Math.PI * 1.6); mCtx.strokeStyle = '#0ea5e9'; mCtx.stroke();
   mCtx.beginPath(); mCtx.arc(cx, cy, r, Math.PI * 1.6, Math.PI * 2); mCtx.strokeStyle = '#ef4444'; mCtx.stroke();
-
-  const marks = ['1','3','5','7','9','+20','+40','+60'];
   mCtx.fillStyle = '#94a3b8'; mCtx.font = 'bold 11px monospace'; mCtx.textAlign = 'center';
-  marks.forEach((txt, i) => {
-    const ang = Math.PI + (i / (marks.length - 1)) * Math.PI;
+  ['1','3','5','7','9','+20','+40','+60'].forEach((txt, i, arr) => {
+    const ang = Math.PI + (i / (arr.length - 1)) * Math.PI;
     mCtx.fillText(txt, cx + Math.cos(ang) * (r - 20), cy + Math.sin(ang) * (r - 20));
   });
   if (pVal > 0.2) {
     const pAng = Math.PI + Math.min(1, pVal / 15) * Math.PI;
-    mCtx.beginPath();
-    mCtx.moveTo(cx + Math.cos(pAng) * (r - 12), cy + Math.sin(pAng) * (r - 12));
+    mCtx.beginPath(); mCtx.moveTo(cx + Math.cos(pAng) * (r - 12), cy + Math.sin(pAng) * (r - 12));
     mCtx.lineTo(cx + Math.cos(pAng) * (r + 5), cy + Math.sin(pAng) * (r + 5));
     mCtx.strokeStyle = '#ef4444'; mCtx.lineWidth = 3; mCtx.stroke();
   }
   const ang = Math.PI + Math.max(0, Math.min(1, sVal / 15)) * Math.PI;
-  mCtx.beginPath(); mCtx.moveTo(cx, cy);
-  mCtx.lineTo(cx + Math.cos(ang) * (r - 6), cy + Math.sin(ang) * (r - 6));
+  mCtx.beginPath(); mCtx.moveTo(cx, cy); mCtx.lineTo(cx + Math.cos(ang) * (r - 6), cy + Math.sin(ang) * (r - 6));
   mCtx.strokeStyle = '#facc15'; mCtx.lineWidth = 3; mCtx.stroke();
   mCtx.beginPath(); mCtx.arc(cx, cy, 6, 0, Math.PI * 2); mCtx.fillStyle = '#e2e8f0'; mCtx.fill();
 }
@@ -580,29 +475,24 @@ drawMeter(0, 0);
 function loop() {
   rafId = requestAnimationFrame(loop);
   if (!analyser) return;
-  const timeData = new Float32Array(analyser.fftSize);
-  analyser.getFloatTimeDomainData(timeData);
-  const freqData = new Uint8Array(analyser.frequencyBinCount);
-  analyser.getByteFrequencyData(freqData);
-
-  let sum = 0;
-  for (let i = 0; i < timeData.length; i++) sum += timeData[i] * timeData[i];
+  const timeData = new Float32Array(analyser.fftSize), freqData = new Uint8Array(analyser.frequencyBinCount);
+  analyser.getFloatTimeDomainData(timeData); analyser.getByteFrequencyData(freqData);
+  let sum = 0; for (let i = 0; i < timeData.length; i++) sum += timeData[i] * timeData[i];
   const rms = Math.sqrt(sum / timeData.length);
   rawDbNoOffset = rms > 0.00001 ? 20 * Math.log10(rms) : -90;
   const db = rawDbNoOffset + parseInt(slOffset.value, 10);
   currentDb = Math.round(db);
-
   const rawS = Math.max(0, Math.min(15, (db + 76) / 6));
-  smoothS = smoothS * 0.72 + rawS * 0.28;
-  if (smoothS > peakS) { peakS = smoothS; peakHoldFrames = 45; }
-  else if (peakHoldFrames > 0) peakHoldFrames--;
-  else peakS = Math.max(smoothS, peakS - 0.08);
 
+  // AGUJA SUAVE: sube rápido al pico, baja lento y estable
+  smoothS = rawS > smoothS ? smoothS * 0.65 + rawS * 0.35 : smoothS * 0.94 + rawS * 0.06;
+
+  if (smoothS > peakS) { peakS = smoothS; peakHoldFrames = 45; }
+  else if (peakHoldFrames > 0) peakHoldFrames--; else peakS = Math.max(smoothS, peakS - 0.05);
   const sInt = Math.round(smoothS);
   currentSLabel = sInt <= 9 ? 'S' + sInt : 'S9+' + ((sInt - 9) * 10);
   const rVal = sInt >= 7 ? 5 : sInt >= 5 ? 4 : sInt >= 3 ? 3 : sInt >= 1 ? 2 : 1;
   currentRS = selMode.value === 'RST' ? `R${rVal} ${currentSLabel} T9` : `R${rVal} ${currentSLabel}`;
-
   document.getElementById('valS').textContent = currentSLabel;
   document.getElementById('valRS').textContent = currentRS;
   document.getElementById('valDb').textContent = `${currentDb} dB`;
@@ -611,10 +501,10 @@ function loop() {
   const sqOpen = smoothS >= parseInt(slSq.value, 10);
   document.getElementById('sqLed').classList.toggle('on', sqOpen);
   document.getElementById('sqText').textContent = sqOpen ? `RX ACTIVO (${currentRS})` : 'SQUELCH CERRADO';
+  handleVoxSquelch(sqOpen);
 
   const ww = wCan.width = wCan.clientWidth || 300, wh = wCan.height = 95;
-  wCtx.clearRect(0, 0, ww, wh);
-  wCtx.strokeStyle = '#38bdf8'; wCtx.lineWidth = 1.5; wCtx.beginPath();
+  wCtx.clearRect(0, 0, ww, wh); wCtx.strokeStyle = '#38bdf8'; wCtx.lineWidth = 1.5; wCtx.beginPath();
   for (let i = 0; i < timeData.length; i++) {
     const x = (i / timeData.length) * ww, y = (0.5 - timeData[i] * 0.48) * wh;
     if (i === 0) wCtx.moveTo(x, y); else wCtx.lineTo(x, y);
@@ -623,102 +513,34 @@ function loop() {
 
   const fw = fCan.width = fCan.clientWidth || 300, fh = fCan.height = 110;
   fCtx.clearRect(0, 0, fw, fh);
-  const bars = 64, bw = fw / bars;
-  for (let i = 0; i < bars; i++) {
+  for (let i = 0; i < 64; i++) {
     const v = freqData[i * 2] / 255, bh = v * fh;
     fCtx.fillStyle = v > 0.7 ? '#ef4444' : v > 0.4 ? '#facc15' : '#22c55e';
-    fCtx.fillRect(i * bw, fh - bh, bw - 1, bh);
+    fCtx.fillRect(i * (fw / 64), fh - bh, (fw / 64) - 1, bh);
   }
 }
 
-// 10. TRANSCRIPCIÓN EN VIVO + IA GEMINI
-let recognition = null, liveOn = false;
-const btnLiveTrans = document.getElementById('btnLiveTrans');
-btnLiveTrans.addEventListener('click', () => {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) { setStatus('Tu navegador no soporta dictado en vivo.', 'err'); return; }
-  if (liveOn) { recognition.stop(); return; }
-  recognition = new SR();
-  recognition.lang = 'es-AR';
-  recognition.continuous = true;
-  recognition.interimResults = true;
-  recognition.onstart = () => { liveOn = true; btnLiveTrans.textContent = 'Detener Transcripción'; btnLiveTrans.style.background = '#ef4444'; };
-  recognition.onresult = (e) => {
-    let txt = '';
-    for (let i = 0; i < e.results.length; i++) txt += e.results[i][0].transcript + ' ';
-    transText.value = txt.trim();
-  };
-  recognition.onend = () => { liveOn = false; btnLiveTrans.textContent = 'Transcribir en Vivo (Chrome)'; btnLiveTrans.style.background = ''; };
-  recognition.start();
-});
-
-const apiKeyInput = document.getElementById('apiKeyInput');
-try { apiKeyInput.value = localStorage.getItem('gemini_api_key') || ''; } catch(e) {}
+// 7. BOTONES IA Y LOG UTC
 document.getElementById('btnSaveKey').addEventListener('click', () => {
   try { localStorage.setItem('gemini_api_key', apiKeyInput.value.trim()); } catch(e) {}
-  setStatus('API Key guardada en este dispositivo.', 'ok');
+  setStatus('API Key guardada.', 'ok');
 });
-
-document.getElementById('btnAiTrans').addEventListener('click', async () => {
-  const key = apiKeyInput.value.trim();
+document.getElementById('btnAiTrans').addEventListener('click', () => {
   if (!currentAudioBlob) { setStatus('Primero graba un QSO o sube un audio.', 'err'); return; }
-  if (!key) { setStatus('Abre "Configurar API Key de Gemini" y pega tu clave gratuita.', 'err'); return; }
-  setStatus('Transcribiendo audio con Gemini IA...');
-  try {
-    const b64 = await new Promise((res, rej) => {
-      const r = new FileReader();
-      r.onloadend = () => res(r.result.split(',')[1]);
-      r.onerror = rej;
-      r.readAsDataURL(currentAudioBlob);
-    });
-    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(key)}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            { text: 'Transcribe fielmente este audio de radioaficionados en español. Respeta indicativos (callsigns), código fonético internacional, reportes RS/RST y códigos Q.' },
-            { inline_data: { mime_type: (currentAudioBlob.type || 'audio/webm').split(';')[0], data: b64 } }
-          ]
-        }]
-      })
-    });
-    const data = await resp.json();
-    const out = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (out) { transText.value = out; setStatus('Transcripción IA completada.', 'ok'); }
-    else setStatus('Error IA: ' + (data?.error?.message || 'Sin respuesta'), 'err');
-  } catch (err) {
-    setStatus('Error al transcribir: ' + err.message, 'err');
-  }
+  transcribeBlobWithGemini(currentAudioBlob, false);
 });
+document.getElementById('btnCopyTrans').addEventListener('click', () => { navigator.clipboard.writeText(transText.value || ''); setStatus('Copiado.', 'ok'); });
+document.getElementById('btnClearTrans').addEventListener('click', () => { transText.value = ''; });
 
-document.getElementById('btnCopyTrans').addEventListener('click', () => {
-  navigator.clipboard.writeText(transText.value || '');
-  setStatus('Transcripción copiada al portapapeles.', 'ok');
-});
-
-// 11. MINI LOG UTC
 function renderLogs() {
   const el = document.getElementById('logList');
   if (!logs.length) { el.innerHTML = '<div class="sub">Sin QSOs registrados todavía.</div>'; return; }
-  el.innerHTML = logs.map(l => `
-    <div class="log-row">
-      <div class="log-top">
-        <span>${l.call || 'SIN INDICATIVO'} ${l.freq ? '• ' + l.freq : ''}</span>
-        <span style="color:#facc15;">${l.rs} (${l.db} dB)</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;color:#94a3b8;">
-        <span>${l.utc}</span>
-        <span>${l.loc ? l.loc + ' | ' : ''}${l.notes || ''}</span>
-      </div>
-    </div>
-  `).join('');
+  el.innerHTML = logs.map(l => `<div class="log-row"><div class="log-top"><span>${l.call || 'SIN INDICATIVO'} ${l.freq ? '• ' + l.freq : ''}</span><span style="color:#facc15;">${l.rs} (${l.db} dB)</span></div><div style="display:flex;justify-content:space-between;color:#94a3b8;"><span>${l.utc}</span><span>${l.loc ? l.loc + ' | ' : ''}${l.notes || ''}</span></div></div>`).join('');
 }
 renderLogs();
 
 document.getElementById('btnSaveLog').addEventListener('click', () => {
-  const now = new Date();
-  const utc = now.toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
+  const utc = new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
   const call = document.getElementById('inCall').value.trim().toUpperCase();
   const freq = document.getElementById('inFreq').value.trim();
   const notes = document.getElementById('inNotes').value.trim();
@@ -726,27 +548,20 @@ document.getElementById('btnSaveLog').addEventListener('click', () => {
   logs.unshift({ utc, call, freq, rs: currentRS, db: currentDb, loc, notes });
   if (logs.length > 100) logs.pop();
   try { localStorage.setItem('smeter_logs_v2', JSON.stringify(logs)); } catch(e) {}
-  document.getElementById('inCall').value = '';
-  document.getElementById('inNotes').value = '';
+  document.getElementById('inCall').value = ''; document.getElementById('inNotes').value = '';
   document.getElementById('callInfoBox').classList.add('hidden');
-  renderLogs();
-  setStatus('QSO guardado en el Libro de Guardia UTC.', 'ok');
+  renderLogs(); setStatus('QSO guardado en UTC.', 'ok');
 });
 
 document.getElementById('btnCsv').addEventListener('click', () => {
   const csv = 'Fecha_Hora_UTC,Indicativo,Ubicacion,Frecuencia,Reporte,dBFS,Notas\n' +
     logs.map(l => `"${l.utc}","${l.call}","${l.loc||''}","${l.freq}","${l.rs}",${l.db},"${(l.notes||'').replace(/"/g,'""')}"`).join('\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
-  a.download = 'libro_guardia_utc.csv';
-  a.click();
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+  a.download = 'libro_guardia_utc.csv'; a.click();
 });
-
 document.getElementById('btnClearLog').addEventListener('click', () => {
-  if (!confirm('¿Borrar todos los registros del log?')) return;
-  logs = [];
-  try { localStorage.removeItem('smeter_logs_v2'); } catch(e) {}
-  renderLogs();
+  if (!confirm('¿Borrar todos los registros?')) return;
+  logs = []; try { localStorage.removeItem('smeter_logs_v2'); } catch(e) {} renderLogs();
 });
 </script>
 </body>
