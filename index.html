@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>S-Meter Pro RX — Guardia IA</title>
+  <title>S-Meter Pro RX — Guardia IA, CW & ENACOM</title>
   <link rel="manifest" href="manifest.json" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -17,20 +17,26 @@
     .sub { font-size: 0.76rem; color: #94a3b8; }
     .wx-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 8px; padding-top: 8px; border-top: 1px solid #1e293b; font-size: 0.8rem; color: #cbd5e1; }
     .row { display: flex; flex-wrap: wrap; gap: 8px; }
-    button, .file-btn { flex: 1; min-width: 105px; padding: 11px 10px; border: none; border-radius: 8px; font-weight: 700; font-size: 0.84rem; cursor: pointer; text-align: center; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+    button, .file-btn { flex: 1; min-width: 105px; padding: 11px 10px; border: none; border-radius: 8px; font-weight: 700; font-size: 0.84rem; cursor: pointer; text-align: center; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; user-select: none; -webkit-user-select: none; }
     .btn-mic { background: #22c55e; color: #052e16; }
     .btn-mic.active { background: #ef4444; color: #fff; }
     .btn-guard { background: #1e293b; color: #cbd5e1; border: 1px solid #334155; }
     .btn-guard.active { background: #f59e0b; color: #1c1917; border-color: #f59e0b; }
     .btn-vox { background: #1e293b; color: #a7f3d0; border: 1px solid #059669; }
     .btn-vox.active { background: #10b981; color: #022c22; border-color: #10b981; }
+    .btn-chrome { background: #1e293b; color: #93c5fd; border: 1px solid #2563eb; }
+    .btn-chrome.active { background: #2563eb; color: #fff; animation: pulse 1.4s infinite; }
+    .btn-cw { background: #1e293b; color: #fde047; border: 1px solid #ca8a04; }
+    .btn-cw.active { background: #eab308; color: #1c1917; }
     .btn-rec { background: #7f1d1d; color: #fecaca; border: 1px solid #ef4444; }
     .btn-rec.active { background: #ef4444; color: #fff; animation: pulse 1.2s infinite; }
     .btn-sec { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; }
     .btn-pri { background: #0284c7; color: #fff; }
     .btn-qrz { background: #065f46; color: #a7f3d0; border: 1px solid #10b981; }
     .btn-sm { flex: 0 1 auto; min-width: auto; padding: 6px 10px; font-size: 0.75rem; }
-    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.65; } }
+    .btn-key { background: #1e293b; color: #facc15; border: 2px solid #eab308; padding: 18px; font-size: 1rem; touch-action: manipulation; }
+    .btn-key:active, .btn-key.pressed { background: #eab308; color: #0f172a; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.68; } }
     .status { font-family: monospace; font-size: 0.78rem; color: #94a3b8; background: #020617; padding: 8px 10px; border-radius: 6px; border-left: 3px solid #334155; margin-top: 8px; }
     .status.ok { border-left-color: #22c55e; color: #86efac; }
     .status.err { border-left-color: #ef4444; color: #fca5a5; }
@@ -40,40 +46,56 @@
     .readout { display: flex; justify-content: space-around; align-items: center; margin: 8px 0; text-align: center; font-family: monospace; }
     .big-s { font-size: 1.9rem; font-weight: 900; color: #38bdf8; }
     .big-rs { font-size: 1.5rem; font-weight: 800; color: #facc15; }
-    .lbl { font-size: 0.72rem; color: #94a3b8; font-weight: 700; letter-spacing: 0.4px; }
+    .lbl { font-size: 0.72rem; color: #94a3b8; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; }
     .sliders { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 8px; }
     @media (min-width: 480px) { .sliders { grid-template-columns: 1fr 1fr 1fr; } }
     .sl-item label { display: flex; justify-content: space-between; font-size: 0.75rem; color: #cbd5e1; margin-bottom: 3px; }
     input[type=range] { width: 100%; accent-color: #38bdf8; }
     input[type=text], input[type=password], select, textarea { width: 100%; background: #020617; color: #f8fafc; border: 1px solid #334155; border-radius: 7px; padding: 8px 10px; font-size: 0.88rem; font-family: inherit; }
-    textarea { min-height: 105px; resize: vertical; font-family: monospace; font-size: 0.82rem; }
+    textarea { min-height: 90px; resize: vertical; font-family: monospace; font-size: 0.82rem; }
     .led-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 0.82rem; font-weight: 700; margin-top: 8px; }
     .led-wrap { display: flex; align-items: center; gap: 8px; }
     .led { width: 12px; height: 12px; border-radius: 50%; background: #334155; }
     .led.on { background: #22c55e; box-shadow: 0 0 10px #22c55e; }
+    .led.cw { background: #eab308; box-shadow: 0 0 10px #eab308; }
     audio { width: 100%; height: 38px; margin-top: 8px; }
     .log-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
     .call-info { margin-top: 8px; padding: 10px; border-radius: 8px; background: #020617; border: 1px solid #1e3a8a; display: flex; flex-direction: column; gap: 6px; font-size: 0.82rem; }
     .call-info-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
     .call-badge { font-family: monospace; font-weight: 800; color: #38bdf8; font-size: 0.95rem; }
     .call-dist { font-family: monospace; color: #facc15; font-weight: 700; }
-    .log-list { max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.76rem; margin-top: 8px; }
+    .log-list { max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.76rem; margin-top: 8px; background: #020617; border: 1px solid #1e293b; border-radius: 8px; padding: 8px; }
     .log-row { display: flex; flex-direction: column; gap: 2px; padding: 6px 0; border-bottom: 1px solid #1e293b; color: #cbd5e1; }
+    .log-row:last-child { border-bottom: none; }
     .log-top { display: flex; justify-content: space-between; color: #38bdf8; font-weight: 700; }
-    .hidden { display: none; }
+    .cw-box { background: #020617; border: 1px solid #334155; border-radius: 8px; padding: 8px; font-family: monospace; margin-top: 8px; }
+    .cw-live { font-size: 1.05rem; color: #fde047; min-height: 26px; word-break: break-all; }
+    .cw-symbols { font-size: 0.85rem; color: #94a3b8; min-height: 18px; }
+    .modal-bg { position: fixed; inset: 0; background: rgba(2,6,23,0.88); z-index: 50; display: flex; align-items: center; justify-content: center; padding: 12px; }
+    .modal-card { background: #0f172a; border: 1px solid #38bdf8; border-radius: 12px; max-width: 720px; width: 100%; max-height: 88dvh; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+    .band-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; margin-top: 6px; }
+    .band-table th, .band-table td { border: 1px solid #1e293b; padding: 6px; text-align: left; }
+    .band-table th { background: #020617; color: #38bdf8; }
+    .chk-list { list-style: none; display: flex; flex-direction: column; gap: 6px; font-size: 0.82rem; }
+    .chk-list li { display: flex; align-items: center; gap: 8px; background: #020617; padding: 6px 8px; border-radius: 6px; }
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
 <div class="wrap">
+  <!-- CABECERA -->
   <div class="card">
     <div class="top">
       <div>
         <div class="title">S-Meter Pro RX</div>
-        <div class="sub">Monitor de Guardia, Reportes RS/RST &amp; Auto-IA</div>
+        <div class="sub">Guardia Pasiva, CW Morse, Dictado &amp; ENACOM</div>
       </div>
-      <div class="clock-box">
-        <div class="utc" id="utcTime">--:--:-- UTC</div>
-        <div class="sub" id="utcDate">----/--/-- | Local --:--:--</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <button id="btnOpenManual" class="btn-pri btn-sm">Manual &amp; Bandas ENACOM</button>
+        <div class="clock-box">
+          <div class="utc" id="utcTime">--:--:-- UTC</div>
+          <div class="sub" id="utcDate">----/--/-- | Local --:--:--</div>
+        </div>
       </div>
     </div>
     <div class="wx-bar">
@@ -82,21 +104,28 @@
     </div>
   </div>
 
+  <!-- CONTROLES PRINCIPALES -->
   <div class="card">
     <div class="row">
       <button id="btnMic" class="btn-mic">Activar Micrófono</button>
-      <button id="btnGuard" class="btn-guard">Modo Guardia: OFF</button>
-      <button id="btnAutoVox" class="btn-vox">Auto-Transc. Squelch: OFF</button>
+      <button id="btnGuard" class="btn-guard">Guardia Pasiva: OFF</button>
+      <button id="btnAutoVox" class="btn-vox">Auto-IA Squelch: OFF</button>
+      <button id="btnCwRx" class="btn-cw">Decod. CW RX: OFF</button>
+      <button id="btnChromeLive" class="btn-chrome">Dictado Chrome: OFF</button>
       <button id="btnRec" class="btn-rec">Grabar QSO</button>
       <label class="file-btn btn-sec">Subir Audio<input id="fileInput" type="file" accept="audio/*" class="hidden" /></label>
     </div>
-    <div id="status" class="status">Listo. Toca "Activar Micrófono" o "Subir Audio".</div>
+    <div id="status" class="status">Listo. Toca "Activar Micrófono" para S-Meter/CW o "Dictado Chrome" para bitácora de voz.</div>
     <div class="led-bar">
-      <div class="led-wrap"><div id="sqLed" class="led"></div><span id="sqText">SQUELCH CERRADO</span></div>
+      <div class="led-wrap">
+        <div id="sqLed" class="led"></div><span id="sqText">SQUELCH CERRADO</span>
+        <div id="cwLed" class="led" style="margin-left:8px;"></div><span id="cwToneText" class="sub">TONO CW</span>
+      </div>
       <span id="recTimer" class="sub" style="font-family:monospace;color:#f87171;"></span>
     </div>
   </div>
 
+  <!-- S-METER Y OSCILOSCOPIO -->
   <div class="grid2">
     <div class="card">
       <canvas id="meterCanvas" height="170"></canvas>
@@ -127,16 +156,71 @@
     </div>
   </div>
 
+  <!-- SECCIÓN CW MORSE (DECODIFICADOR RX + MANIPULADOR MANUAL) -->
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
-      <span class="lbl">AUDIO Y TRANSCRIPCIÓN (GEMINI 3.8 FLASH)</span>
+      <span class="lbl">ESTACIÓN CW MORSE — DECODIFICADOR RX &amp; MANIPULADOR MANUAL</span>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <span class="sub">Vel. WPM: <b id="lblWpm">15</b></span>
+        <input id="slWpm" type="range" min="8" max="30" step="1" value="15" style="width:90px;" />
+        <button id="btnClearCw" class="btn-sec btn-sm">Limpiar CW</button>
+      </div>
+    </div>
+
+    <div class="cw-box">
+      <div class="sub">TEXTO DECODIFICADO / ENVIADO EN VIVO:</div>
+      <div id="cwLiveText" class="cw-live"></div>
+      <div id="cwSymbols" class="cw-symbols"></div>
+    </div>
+
+    <!-- Manipulador Manual y Generador de Texto a Morse -->
+    <div class="row" style="margin-top:8px;align-items:stretch;">
+      <button id="btnManualKey" class="btn-key" style="flex:1.2;">PULSADOR CW MANUAL (MANTENER)</button>
+      <div style="flex:2;display:flex;flex-direction:column;gap:6px;">
+        <div class="row">
+          <input id="inCwSend" type="text" placeholder="Escribe texto para transmitir en Morse (ej: CQ CQ DE LU1XQD K)" style="flex:2;text-transform:uppercase;" />
+          <button id="btnPlayCw" class="btn-pri btn-sm" style="flex:1;">Emitir CW</button>
+          <button id="btnStopCw" class="btn-sec btn-sm">Parar</button>
+        </div>
+        <div class="sub">Pulsa el botón amarillo para manipular manualmente o escribe texto para escucharlo en tono de 700 Hz y registrarlo.</div>
+      </div>
+    </div>
+
+    <details style="margin-top:8px;">
+      <summary class="sub" style="cursor:pointer;">Bitácora de Guardia CW (<span id="cwLogCount">0</span> registros guardados)</summary>
+      <div class="row" style="margin-top:6px;">
+        <button id="btnSaveCwManual" class="btn-sec btn-sm">Asentar texto actual en Bitácora CW</button>
+        <button id="btnClearCwLog" class="btn-sec btn-sm" style="color:#f87171;">Borrar Bitácora CW</button>
+      </div>
+      <div id="cwLogList" class="log-list" style="max-height:140px;"></div>
+    </details>
+  </div>
+
+  <!-- BITÁCORA DE VOZ CHROME + IA GEMINI -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+      <span class="lbl">BITÁCORA DE VOZ (DICTADO CHROME) &amp; TRANSCRIPCIÓN IA</span>
       <a id="btnDownload" class="hidden" style="color:#38bdf8;font-size:0.78rem;font-weight:700;text-decoration:none;">Descargar Audio</a>
     </div>
+
+    <!-- Bitácora en vivo de Chrome con fecha y hora -->
+    <div style="margin-top:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <span class="sub">Registro automático Dictado Chrome (<span id="chromeCount">0</span> entradas):</span>
+        <div style="display:flex;gap:6px;">
+          <button id="btnCopyChrome" class="btn-sec btn-sm">Copiar Bitácora</button>
+          <button id="btnClearChrome" class="btn-sec btn-sm" style="color:#f87171;">Limpiar</button>
+        </div>
+      </div>
+      <div id="chromeInterim" class="sub" style="color:#93c5fd;min-height:18px;font-style:italic;"></div>
+      <div id="chromeLogList" class="log-list" style="max-height:160px;"></div>
+    </div>
+
     <audio id="audioPlayer" controls playsinline></audio>
     <div class="row" style="margin-top:8px;">
-      <button id="btnAiTrans" class="btn-pri btn-sm" style="flex:1;">Transcribir Audio (IA Gemini)</button>
-      <button id="btnCopyTrans" class="btn-sec btn-sm">Copiar</button>
-      <button id="btnClearTrans" class="btn-sec btn-sm">Limpiar</button>
+      <button id="btnAiTrans" class="btn-pri btn-sm" style="flex:1;">Transcribir Audio Grabado (IA Gemini)</button>
+      <button id="btnCopyTrans" class="btn-sec btn-sm">Copiar IA</button>
+      <button id="btnClearTrans" class="btn-sec btn-sm">Limpiar IA</button>
     </div>
     <details style="margin-top:8px;">
       <summary class="sub" style="cursor:pointer;">Configurar API Key de Gemini</summary>
@@ -145,9 +229,10 @@
         <button id="btnSaveKey" class="btn-sec btn-sm">Guardar Key</button>
       </div>
     </details>
-    <textarea id="transText" style="margin-top:8px;" placeholder="Aquí aparecerán las transcripciones automáticas por Squelch o manuales..."></textarea>
+    <textarea id="transText" style="margin-top:8px;" placeholder="Transcripciones por Squelch IA o de archivos de audio..."></textarea>
   </div>
 
+  <!-- LIBRO DE GUARDIA Y PADRÓN ENACOM -->
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;">
       <span class="lbl">LIBRO DE GUARDIA / BUSCADOR DE INDICATIVOS</span>
@@ -183,7 +268,7 @@
       <div style="margin-top:6px;display:flex;flex-direction:column;gap:6px;">
         <div class="row">
           <a href="https://hertz.enacom.gob.ar/se/portal/arg/publico/ListadoRadioaficionado.php" target="_blank" rel="noopener" class="btn-pri btn-sm" style="flex:1;">1. Abrir Hertz ENACOM</a>
-          <label class="file-btn btn-sec btn-sm" style="flex:1;">2. Importar Archivo<input id="enacomFile" type="file" accept=".txt,.csv,.html,.htm" class="hidden" /></label>
+          <label class="file-btn btn-sec btn-sm" style="flex:1;">2. Importar Archivo<input id="enacomFile" type="file" accept=".txt,.csv,.html,.htm,.mhtml,.mht" class="hidden" /></label>
         </div>
         <textarea id="enacomPaste" style="min-height:60px;" placeholder="O pega aquí el listado copiado de Hertz ENACOM..."></textarea>
         <div class="row">
@@ -197,8 +282,44 @@
   </div>
 </div>
 
+<!-- MODAL: MANUAL ENACOM, PLAN DE BANDAS Y CHEQUEO DE EQUIPO -->
+<div id="manualModal" class="modal-bg hidden">
+  <div class="modal-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div class="title">Manual Operativo &amp; Plan de Bandas ENACOM</div>
+      <button id="btnCloseManual" class="btn-sec btn-sm">Cerrar</button>
+    </div>
+
+    <div class="lbl">1. REVISIÓN PREVIA DE EQUIPO Y ESTACIÓN</div>
+    <ul class="chk-list">
+      <li><input type="checkbox" /> <span><b>Alimentación y Batería:</b> Verificar tensión nominal (13.8 V DC o carga de batería portable) y polaridad.</span></li>
+      <li><input type="checkbox" /> <span><b>Antena y Línea:</b> Comprobar conectores PL-259/BNC, balun y relación de ondas estacionarias (ROE / SWR &lt; 1.5:1) a baja potencia.</span></li>
+      <li><input type="checkbox" /> <span><b>Puesta a Tierra y Seguridad:</b> Confirmar descarga a tierra física y despeje de cables antes de transmitir.</span></li>
+      <li><input type="checkbox" /> <span><b>Audio y Calibración RX:</b> Ajustar volumen del transceptor al 30–40%, fijar piso S1 y squelch sin saturar el micrófono.</span></li>
+      <li><input type="checkbox" /> <span><b>Hora UTC:</b> Verificar reloj sincronizado en UTC para el Libro de Guardia.</span></li>
+    </ul>
+
+    <div class="lbl" style="margin-top:4px;">2. PLAN DE BANDAS SEGÚN CATEGORÍA (ARGENTINA - ENACOM)</div>
+    <div class="row" style="align-items:center;">
+      <span class="sub">Selecciona tu categoría:</span>
+      <select id="selCatEnacom" style="flex:1;">
+        <option value="NOVICIO">Categoría Novicio</option>
+        <option value="GENERAL">Categoría General</option>
+        <option value="SUPERIOR">Categoría Superior</option>
+      </select>
+    </div>
+    <div id="enacomCatContent"></div>
+  </div>
+</div>
+
 <script>
-// 1. RELOJ UTC
+// ==========================================
+// 1. RELOJ UTC Y LOCAL
+// ==========================================
+function getUtcStamp() {
+  const now = new Date(), pad = n => String(n).padStart(2, '0');
+  return `${now.getUTCFullYear()}-${pad(now.getUTCMonth()+1)}-${pad(now.getUTCDate())} ${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())} UTC`;
+}
 function updateClock() {
   const now = new Date(), pad = n => String(n).padStart(2, '0');
   document.getElementById('utcTime').textContent = `${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())} UTC`;
@@ -207,7 +328,80 @@ function updateClock() {
 setInterval(updateClock, 250);
 updateClock();
 
-// 2. CLIMA EN VIVO
+// ==========================================
+// 2. MANUAL ENACOM (BANDAS Y PROCEDIMIENTO)
+// ==========================================
+const enacomGuides = {
+  NOVICIO: {
+    resumen: 'Habilitación inicial en HF (bandas atribuidas) y operación plena en VHF/UHF (2 m y 70 cm). Potencia máxima reglamentaria según banda y sub-banda.',
+    bandas: [
+      ['80 m (3.500–3.750 kHz)', 'CW / Fonía (LSB) / Digitales en segmentos asignados'],
+      ['40 m (7.000–7.300 kHz)', 'CW (7.000–7.040) / Digitales / Fonía LSB (7.050–7.300)'],
+      ['15 m (21.000–21.450 kHz)', 'CW / Digitales / Fonía USB según segmento atribuido'],
+      ['10 m (28.000–29.700 kHz)', 'CW / Digitales / Fonía USB / FM (29.510–29.700)'],
+      ['2 m (144–148 MHz) y 70 cm (430–440 MHz)', 'FM, Repetidoras, SSB, CW y Modos Digitales / Satélites']
+    ],
+    procedimiento: [
+      '<b>1. Escucha previa:</b> Escuchar al menos 15–30 segundos y preguntar en frecuencia "¿Está ocupada la frecuencia? Aquí [Tu Indicativo]" antes de llamar.',
+      '<b>2. Llamado General (CQ):</b> En fonía: "CQ, CQ, CQ de [Indicativo en código fonético], [Indicativo] llama y queda atento". En CW: "CQ CQ DE [INDICATIVO] [INDICATIVO] K".',
+      '<b>3. Intercambio estándar:</b> Pasar reporte RS/RST (ej. 59 o 599), nombre del operador, QTH (ciudad/provincia) y Grid Locator.',
+      '<b>4. Cierre y registro:</b> Despedirse con "73" y asentar hora UTC, frecuencia, indicativo y reporte en el Libro de Guardia.'
+    ]
+  },
+  GENERAL: {
+    resumen: 'Amplía privilegios en bandas HF intermedias (20 m, 17 m, 12 m y 160 m según resolución vigente) manteniendo VHF/UHF y mayor límite de potencia.',
+    bandas: [
+      ['160 m / 80 m / 40 m', 'Acceso ampliado en CW, Modos Digitales y Fonía LSB'],
+      ['20 m (14.000–14.350 kHz)', 'CW (14.000–14.070) / Digitales / Fonía USB (14.100–14.350)'],
+      ['17 m (18.068–18.168 kHz) y 12 m (24.890–24.990 kHz)', 'CW, Digitales y Fonía USB (bandas WARC sin concursos)'],
+      ['15 m y 10 m', 'Acceso completo en CW, Digitales y Fonía USB/FM'],
+      ['6 m, 2 m y 70 cm', 'Acceso pleno en todos los modos autorizados']
+    ],
+    procedimiento: [
+      '<b>1. Selección de banda lateral:</b> Usar LSB por debajo de 10 MHz (160, 80, 40 m) y USB por encima de 10 MHz (20, 17, 15, 12, 10 m).',
+      '<b>2. Operación DX y Split:</b> Si una estación DX opera en Split, escuchar en su frecuencia de TX y transmitir en la frecuencia de escucha indicada ("UP 5").',
+      '<b>3. Identificación reglamentaria:</b> Transmitir el indicativo completo al inicio, al final y cada 10 minutos durante comunicados prolongados.'
+    ]
+  },
+  SUPERIOR: {
+    resumen: 'Acceso total a todas las bandas atribuídas al Servicio de Radioaficionados en Argentina (incluyendo 60 m, 30 m y bandas superiores) y máxima potencia autorizada.',
+    bandas: [
+      ['160 m, 80 m, 60 m (5.351,5–5.366,5 kHz), 40 m', 'Todos los modos autorizados (60 m con límite de potencia EIRP)'],
+      ['30 m (10.100–10.150 kHz)', 'Exclusivo CW y Modos Digitales de banda angosta'],
+      ['20 m, 17 m, 15 m, 12 m, 10 m', 'Acceso integral en todos los segmentos y modos'],
+      ['6 m, 2 m, 70 cm y microondas', 'Acceso completo incluyendo EME, satélites y experimentación']
+    ],
+    procedimiento: [
+      '<b>1. Guardia y redes de emergencia:</b> Priorizar frecuencias de encuentro y tráfico de emergencia cuando exista alerta vigente.',
+      '<b>2. Control de ancho de banda y pureza espectral:</b> Ajustar nivel de ALC/micrófono para evitar sobremodulación o espurias en bandas adyacentes.',
+      '<b>3. Registro de tráfico y QSL:</b> Mantener bitácora UTC precisa para confirmación de contactos y controles técnicos.'
+    ]
+  }
+};
+
+function renderEnacomGuide(cat) {
+  const g = enacomGuides[cat] || enacomGuides.NOVICIO;
+  const rows = g.bandas.map(b => `<tr><td><b>${b[0]}</b></td><td>${b[1]}</td></tr>`).join('');
+  const steps = g.procedimiento.map(p => `<div style="margin-bottom:4px;">${p}</div>`).join('');
+  document.getElementById('enacomCatContent').innerHTML = `
+    <p class="sub" style="color:#cbd5e1;margin-top:6px;">${g.resumen}</p>
+    <table class="band-table">
+      <thead><tr><th>Banda / Segmento</th><th>Modos / Notas</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="lbl" style="margin-top:10px;">3. PROCEDIMIENTO OPERATIVO RESUMIDO</div>
+    <div style="background:#020617;padding:8px;border-radius:8px;border:1px solid #1e293b;font-size:0.8rem;margin-top:4px;">${steps}</div>
+    <div class="sub" style="margin-top:6px;">Nota: Verificar siempre la atribución vigente en el Reglamento General de Radioaficionados de ENACOM antes de transmitir.</div>
+  `;
+}
+renderEnacomGuide('NOVICIO');
+document.getElementById('selCatEnacom').addEventListener('change', e => renderEnacomGuide(e.target.value));
+document.getElementById('btnOpenManual').addEventListener('click', () => document.getElementById('manualModal').classList.remove('hidden'));
+document.getElementById('btnCloseManual').addEventListener('click', () => document.getElementById('manualModal').classList.add('hidden'));
+
+// ==========================================
+// 3. CLIMA EN VIVO
+// ==========================================
 let myQth = { lat: -54.8019, lon: -68.3030, name: 'Ushuaia (QTH)' };
 const wxCodes = { 0:'Despejado', 1:'Poco nuboso', 2:'Parc. nublado', 3:'Nublado', 45:'Niebla', 51:'Llovizna', 61:'Lluvia', 71:'Nieve', 80:'Chubascos', 95:'Tormenta' };
 async function loadWeather() {
@@ -227,7 +421,9 @@ document.getElementById('btnGps').addEventListener('click', () => {
   }, () => loadWeather());
 });
 
-// 3. BUSCADOR DE INDICATIVOS, GRID, HAMDB Y ENACOM OFFLINE
+// ==========================================
+// 4. BUSCADOR INDICATIVOS, GRID, HAMDB & ENACOM
+// ==========================================
 let enacomMap = {};
 const arProvinces = {
   A:['CABA',-34.60,-58.38], B:['CABA',-34.60,-58.38], C:['CABA',-34.60,-58.38], D:['Buenos Aires',-34.92,-57.95], E:['Buenos Aires',-34.92,-57.95],
@@ -287,9 +483,13 @@ function lookupCallsign(raw) {
     }
   }
   document.getElementById('ciCall').textContent = call;
-  let locHtml = region ? `${country} — ${region}` : country;
-  if (enacomMap[baseCall]) locHtml += `<div style="color:#86efac;margin-top:3px;font-size:0.78rem;"><b>ENACOM:</b> ${enacomMap[baseCall]}</div>`;
+  const locHtml = region ? `${country} — ${region}` : country;
   document.getElementById('ciLoc').innerHTML = locHtml;
+  getEnacomInfo(baseCall).then(info => {
+    if (info && document.getElementById('inCall').value.trim().toUpperCase().split('/')[0] === baseCall) {
+      document.getElementById('ciLoc').innerHTML = `${locHtml}<div style="color:#86efac;margin-top:3px;font-size:0.78rem;"><b>ENACOM:</b> ${info}</div>`;
+    }
+  });
   if (lat !== null) {
     const db = calcDistBearing(myQth.lat, myQth.lon, lat, lon);
     document.getElementById('ciDist').textContent = `~${db.km.toLocaleString('es-AR')} km • Az ${db.az}°`;
@@ -327,7 +527,310 @@ document.getElementById('btnEnacom').addEventListener('click', () => {
   if (call) navigator.clipboard.writeText(call).catch(() => {});
 });
 
-// 4. AUDIO, S-METER SUAVE Y AUTO-TRANSCRIPCIÓN POR SQUELCH
+// ==========================================
+// 5. MORSE (CW): TABLA, DECODIFICADOR RX Y KEYER MANUAL
+// ==========================================
+const MORSE_TO_CHAR = {
+  '.-':'A','-...':'B','-.-.':'C','-..':'D','.':'E','..-.':'F','--.':'G','....':'H','..':'I','.---':'J',
+  '-.-':'K','.-..':'L','--':'M','-.':'N','---':'O','.--.':'P','--.-':'Q','.-.':'R','...':'S','-':'T',
+  '..-':'U','...-':'V','.--':'W','-..-':'X','-.--':'Y','--..':'Z',
+  '-----':'0','.----':'1','..---':'2','...--':'3','....-':'4','.....':'5','-....':'6','--...':'7','---..':'8','----.':'9',
+  '.-.-.-':'.','--..--':',','..--..':'?','-..-.':'/','-...-':'=','.-.-.':'+','.-...':'&','---...':':','-.-.-.':';'
+};
+const CHAR_TO_MORSE = Object.fromEntries(Object.entries(MORSE_TO_CHAR).map(([k, v]) => [v, k]));
+
+let cwRxOn = false, cwWpm = 15;
+let cwToneActive = false, cwToneStart = 0, cwSilenceStart = Date.now(), cwCurSymbols = '', cwDecodedBuffer = '';
+let cwLogs = [];
+try { cwLogs = JSON.parse(localStorage.getItem('smeter_cw_logs_v1') || '[]'); } catch(e) {}
+
+const cwLiveEl = document.getElementById('cwLiveText'), cwSymEl = document.getElementById('cwSymbols');
+const slWpm = document.getElementById('slWpm'), btnCwRx = document.getElementById('btnCwRx');
+
+slWpm.addEventListener('input', () => {
+  cwWpm = parseInt(slWpm.value, 10);
+  document.getElementById('lblWpm').textContent = cwWpm;
+});
+
+function renderCwLogs() {
+  document.getElementById('cwLogCount').textContent = cwLogs.length;
+  const el = document.getElementById('cwLogList');
+  if (!cwLogs.length) { el.innerHTML = '<div class="sub">Sin mensajes CW registrados aún.</div>'; return; }
+  el.innerHTML = cwLogs.map(c => `<div class="log-row"><div class="log-top"><span>${c.utc}</span><span>${c.mode}</span></div><div>${c.text}</div></div>`).join('');
+}
+renderCwLogs();
+
+function saveCwEntry(text, mode = 'RX CW') {
+  const clean = (text || '').trim();
+  if (!clean) return;
+  cwLogs.unshift({ utc: getUtcStamp(), mode, text: clean });
+  if (cwLogs.length > 100) cwLogs.pop();
+  try { localStorage.setItem('smeter_cw_logs_v1', JSON.stringify(cwLogs)); } catch(e) {}
+  renderCwLogs();
+}
+
+function flushCwChar() {
+  if (!cwCurSymbols) return;
+  const ch = MORSE_TO_CHAR[cwCurSymbols] || '?';
+  cwDecodedBuffer += ch;
+  cwLiveEl.textContent = cwDecodedBuffer;
+  cwCurSymbols = '';
+  cwSymEl.textContent = '';
+}
+
+function processCwDetector(freqData, sampleRate) {
+  // Analizar energía en banda típica CW (500 Hz a 900 Hz)
+  const binHz = sampleRate / (freqData.length * 2);
+  const startBin = Math.max(1, Math.floor(500 / binHz));
+  const endBin = Math.min(freqData.length - 1, Math.ceil(900 / binHz));
+  let maxTone = 0, avgNoise = 0;
+  for (let i = startBin; i <= endBin; i++) {
+    if (freqData[i] > maxTone) maxTone = freqData[i];
+  }
+  for (let i = 1; i < 64; i++) avgNoise += freqData[i];
+  avgNoise /= 63;
+
+  const isTone = (maxTone > 110 && maxTone > avgNoise * 1.65);
+  document.getElementById('cwLed').classList.toggle('cw', isTone);
+
+  if (!cwRxOn) return;
+  const now = Date.now();
+  const dotMs = 1200 / cwWpm; // Duración estándar de un punto en ms
+
+  if (isTone && !cwToneActive) {
+    const gap = now - cwSilenceStart;
+    if (gap > dotMs * 6 && cwDecodedBuffer.trim().length > 0) {
+      // Fin de transmisión / pausa larga -> asentar en bitácora CW si hay texto
+      flushCwChar();
+      saveCwEntry(cwDecodedBuffer, `RX CW (${cwWpm} WPM)`);
+      cwDecodedBuffer = '';
+    } else if (gap > dotMs * 2.2) {
+      flushCwChar();
+      if (gap > dotMs * 5.2 && !cwDecodedBuffer.endsWith(' ')) {
+        cwDecodedBuffer += ' ';
+        cwLiveEl.textContent = cwDecodedBuffer;
+      }
+    }
+    cwToneActive = true;
+    cwToneStart = now;
+  } else if (!isTone && cwToneActive) {
+    const dur = now - cwToneStart;
+    if (dur >= dotMs * 0.35) {
+      cwCurSymbols += (dur < dotMs * 2.1) ? '.' : '-';
+      cwSymEl.textContent = cwCurSymbols;
+    }
+    cwToneActive = false;
+    cwSilenceStart = now;
+  } else if (!isTone && !cwToneActive) {
+    const gap = now - cwSilenceStart;
+    if (cwCurSymbols && gap > dotMs * 2.5) flushCwChar();
+    if (gap > 4500 && cwDecodedBuffer.trim().length > 0) {
+      saveCwEntry(cwDecodedBuffer, `RX CW (${cwWpm} WPM)`);
+      cwDecodedBuffer = '';
+    }
+  }
+}
+
+btnCwRx.addEventListener('click', () => {
+  cwRxOn = !cwRxOn;
+  btnCwRx.classList.toggle('active', cwRxOn);
+  btnCwRx.textContent = cwRxOn ? 'Decod. CW RX: ON' : 'Decod. CW RX: OFF';
+  if (cwRxOn && !stream) setStatus('Activa el micrófono para decodificar tono CW entrante.', 'err');
+  else setStatus(cwRxOn ? `Decodificador CW activo (${cwWpm} WPM, tono 500–900 Hz).` : 'Decodificador CW detenido.', cwRxOn ? 'ok' : '');
+});
+
+// Manipulador CW Manual (Straight Key + Oscilador local 700 Hz)
+let cwOsc = null, cwOscGain = null, manualDownTime = 0, manualUpTime = Date.now(), manualTimer = null;
+const btnManualKey = document.getElementById('btnManualKey');
+
+function startSidetone() {
+  ensureAudioCtx();
+  if (!cwOsc) {
+    cwOsc = audioCtx.createOscillator();
+    cwOscGain = audioCtx.createGain();
+    cwOsc.type = 'sine';
+    cwOsc.frequency.value = 700;
+    cwOscGain.gain.value = 0;
+    cwOsc.connect(cwOscGain);
+    cwOscGain.connect(audioCtx.destination);
+    cwOsc.start();
+  }
+  cwOscGain.gain.setTargetAtTime(0.25, audioCtx.currentTime, 0.005);
+}
+function stopSidetone() {
+  if (cwOscGain && audioCtx) cwOscGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.005);
+}
+
+function keyDown() {
+  if (manualDownTime) return;
+  clearTimeout(manualTimer);
+  const dotMs = 1200 / cwWpm;
+  const gap = Date.now() - manualUpTime;
+  if (gap > dotMs * 5.5 && cwDecodedBuffer && !cwDecodedBuffer.endsWith(' ')) {
+    flushCwChar();
+    cwDecodedBuffer += ' ';
+    cwLiveEl.textContent = cwDecodedBuffer;
+  } else if (gap > dotMs * 2.2) {
+    flushCwChar();
+  }
+  manualDownTime = Date.now();
+  btnManualKey.classList.add('pressed');
+  startSidetone();
+}
+
+function keyUp() {
+  if (!manualDownTime) return;
+  const dur = Date.now() - manualDownTime;
+  manualDownTime = 0;
+  manualUpTime = Date.now();
+  btnManualKey.classList.remove('pressed');
+  stopSidetone();
+  const dotMs = 1200 / cwWpm;
+  cwCurSymbols += (dur < dotMs * 2.1) ? '.' : '-';
+  cwSymEl.textContent = cwCurSymbols;
+  manualTimer = setTimeout(() => { flushCwChar(); }, dotMs * 2.8);
+}
+
+btnManualKey.addEventListener('pointerdown', e => { e.preventDefault(); keyDown(); });
+btnManualKey.addEventListener('pointerup', e => { e.preventDefault(); keyUp(); });
+btnManualKey.addEventListener('pointerleave', () => keyUp());
+
+// Generador automático de Texto -> Morse (TX / Práctica)
+let cwTxAbort = false;
+document.getElementById('btnPlayCw').addEventListener('click', async () => {
+  const txt = document.getElementById('inCwSend').value.trim().toUpperCase();
+  if (!txt) return;
+  cwTxAbort = false;
+  const dotMs = 1200 / cwWpm;
+  cwDecodedBuffer += (cwDecodedBuffer ? ' ' : '') + txt;
+  cwLiveEl.textContent = cwDecodedBuffer;
+  saveCwEntry(txt, `TX CW (${cwWpm} WPM)`);
+
+  for (const ch of txt) {
+    if (cwTxAbort) break;
+    if (ch === ' ') { await new Promise(r => setTimeout(r, dotMs * 4)); continue; }
+    const code = CHAR_TO_MORSE[ch];
+    if (!code) continue;
+    cwSymEl.textContent = `${ch} (${code})`;
+    for (const sym of code) {
+      if (cwTxAbort) break;
+      startSidetone();
+      await new Promise(r => setTimeout(r, sym === '.' ? dotMs : dotMs * 3));
+      stopSidetone();
+      await new Promise(r => setTimeout(r, dotMs));
+    }
+    await new Promise(r => setTimeout(r, dotMs * 2));
+  }
+  stopSidetone();
+  cwSymEl.textContent = '';
+});
+document.getElementById('btnStopCw').addEventListener('click', () => { cwTxAbort = true; stopSidetone(); });
+document.getElementById('btnClearCw').addEventListener('click', () => { cwDecodedBuffer = ''; cwCurSymbols = ''; cwLiveEl.textContent = ''; cwSymEl.textContent = ''; });
+document.getElementById('btnSaveCwManual').addEventListener('click', () => { flushCwChar(); saveCwEntry(cwDecodedBuffer, 'Manual CW'); setStatus('Texto CW asentado en bitácora.', 'ok'); });
+document.getElementById('btnClearCwLog').addEventListener('click', () => { if (!confirm('¿Borrar bitácora CW?')) return; cwLogs = []; localStorage.removeItem('smeter_cw_logs_v1'); renderCwLogs(); });
+
+// ==========================================
+// 6. DICTADO EN VIVO DE CHROME CON BITÁCORA
+// ==========================================
+const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null, chromeLiveOn = false, resumeMicAfterChrome = false;
+let chromeLogs = [];
+try { chromeLogs = JSON.parse(localStorage.getItem('smeter_chrome_logs_v1') || '[]'); } catch(e) {}
+
+const btnChromeLive = document.getElementById('btnChromeLive');
+const chromeInterimEl = document.getElementById('chromeInterim');
+
+function renderChromeLogs() {
+  document.getElementById('chromeCount').textContent = chromeLogs.length;
+  const el = document.getElementById('chromeLogList');
+  if (!chromeLogs.length) { el.innerHTML = '<div class="sub">Activa "Dictado Chrome" para registrar voz en vivo con fecha y hora.</div>'; return; }
+  el.innerHTML = chromeLogs.map(item => `<div class="log-row"><div class="log-top"><span>${item.utc}</span><span style="color:#94a3b8;">Local ${item.local}</span></div><div>${item.text}</div></div>`).join('');
+}
+renderChromeLogs();
+
+function addChromeEntry(text) {
+  const clean = (text || '').trim();
+  if (!clean) return;
+  const now = new Date(), pad = n => String(n).padStart(2, '0');
+  const local = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  chromeLogs.unshift({ utc: getUtcStamp(), local, text: clean });
+  if (chromeLogs.length > 200) chromeLogs.pop();
+  try { localStorage.setItem('smeter_chrome_logs_v1', JSON.stringify(chromeLogs)); } catch(e) {}
+  renderChromeLogs();
+}
+
+function startChromeDictation() {
+  if (!SpeechRec) { setStatus('Este navegador no soporta Dictado Web de Chrome.', 'err'); return; }
+  // Liberar micrófono del S-Meter para evitar conflicto en Android
+  if (stream) {
+    resumeMicAfterChrome = true;
+    stopMic();
+  }
+  chromeLiveOn = true;
+  btnChromeLive.classList.add('active');
+  btnChromeLive.textContent = 'Dictado Chrome: ON';
+  setStatus('Dictado Chrome ACTIVO (S-Meter pausado para evitar choque de micrófono en Android).', 'ok');
+
+  recognition = new SpeechRec();
+  recognition.lang = 'es-AR';
+  recognition.continuous = true;
+  recognition.interimResults = true;
+
+  recognition.onresult = e => {
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const transcript = e.results[i][0].transcript;
+      if (e.results[i].isFinal) {
+        addChromeEntry(transcript);
+        chromeInterimEl.textContent = '';
+      } else {
+        interim += transcript;
+      }
+    }
+    if (interim) chromeInterimEl.textContent = 'Escuchando: ' + interim;
+  };
+  recognition.onerror = e => {
+    if (e.error === 'network') setStatus('Dictado Chrome requiere conexión a internet.', 'err');
+  };
+  recognition.onend = () => {
+    if (chromeLiveOn) {
+      try { recognition.start(); } catch(err) {}
+    }
+  };
+  try { recognition.start(); } catch(err) {}
+}
+
+function stopChromeDictation() {
+  chromeLiveOn = false;
+  btnChromeLive.classList.remove('active');
+  btnChromeLive.textContent = 'Dictado Chrome: OFF';
+  chromeInterimEl.textContent = '';
+  if (recognition) { try { recognition.stop(); } catch(e) {} recognition = null; }
+  setStatus('Dictado Chrome detenido.');
+  if (resumeMicAfterChrome) {
+    resumeMicAfterChrome = false;
+    btnMic.click();
+  }
+}
+
+btnChromeLive.addEventListener('click', () => {
+  if (chromeLiveOn) stopChromeDictation();
+  else startChromeDictation();
+});
+
+document.getElementById('btnCopyChrome').addEventListener('click', () => {
+  const txt = chromeLogs.map(c => `[${c.utc} | Local ${c.local}] ${c.text}`).join('\n');
+  navigator.clipboard.writeText(txt);
+  setStatus('Bitácora de voz copiada.', 'ok');
+});
+document.getElementById('btnClearChrome').addEventListener('click', () => {
+  if (!confirm('¿Borrar la bitácora de voz de Chrome?')) return;
+  chromeLogs = []; localStorage.removeItem('smeter_chrome_logs_v1'); renderChromeLogs();
+});
+
+// ==========================================
+// 7. AUDIO, S-METER SUAVE Y AUTO-IA SQUELCH
+// ==========================================
 let audioCtx = null, stream = null, analyser = null, gainNode = null, rafId = null;
 let fileSourceNode = null, mediaRecorder = null, recChunks = [], recInterval = null, recSec = 0;
 let autoVoxOn = false, voxRecorder = null, voxChunks = [], voxSilenceTimer = null, voxStartTime = 0, voxPeakRS = '';
@@ -362,6 +865,7 @@ function ensureAudioCtx() {
 
 btnMic.addEventListener('click', async () => {
   if (stream) { stopMic(); return; }
+  if (chromeLiveOn) stopChromeDictation();
   try {
     setStatus('Solicitando permiso de micrófono...');
     stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -370,7 +874,7 @@ btnMic.addEventListener('click', async () => {
     mute.gain.value = 0;
     src.connect(gainNode); gainNode.connect(analyser); analyser.connect(mute); mute.connect(audioCtx.destination);
     btnMic.textContent = 'Detener Micrófono'; btnMic.classList.add('active');
-    setStatus('Micrófono ACTIVO — Recibiendo audio en vivo', 'ok');
+    setStatus('Micrófono ACTIVO — S-Meter, Espectro y CW listos', 'ok');
     if (!rafId) loop();
   } catch (err) { setStatus('Error: ' + err.name + ' - ' + err.message, 'err'); }
 });
@@ -387,8 +891,8 @@ btnAutoVox.addEventListener('click', () => {
   if (!autoVoxOn && !apiKeyInput.value.trim()) { setStatus('Configura primero tu API Key de Gemini.', 'err'); return; }
   autoVoxOn = !autoVoxOn;
   btnAutoVox.classList.toggle('active', autoVoxOn);
-  btnAutoVox.textContent = autoVoxOn ? 'Auto-Transc. Squelch: ON' : 'Auto-Transc. Squelch: OFF';
-  setStatus(autoVoxOn ? 'Auto-Transcripción por Squelch ACTIVA (esperando señal...)' : 'Auto-Transcripción desactivada.', autoVoxOn ? 'ok' : '');
+  btnAutoVox.textContent = autoVoxOn ? 'Auto-IA Squelch: ON' : 'Auto-IA Squelch: OFF';
+  setStatus(autoVoxOn ? 'Auto-Transcripción por Squelch ACTIVA.' : 'Auto-Transcripción desactivada.', autoVoxOn ? 'ok' : '');
 });
 
 function handleVoxSquelch(sqOpen) {
@@ -432,7 +936,7 @@ async function transcribeBlobWithGemini(blob, appendMode = false, rsTag = '') {
     if (out) {
       if (appendMode) {
         if (out !== '[Ruido]') transText.value = `[${new Date().toISOString().slice(11, 19)} UTC | ${rsTag}] ${out}\n` + transText.value;
-        setStatus('Auto-transcripción agregada. Escuchando...', 'ok');
+        setStatus('Auto-transcripción agregada.', 'ok');
       } else { transText.value = out; setStatus('Transcripción IA completada.', 'ok'); }
     } else setStatus('Error IA: ' + (data?.error?.message || 'Sin respuesta'), 'err');
   } catch (err) { setStatus('Error IA: ' + err.message, 'err'); }
@@ -475,17 +979,35 @@ function stopRecording() {
   btnRec.textContent = 'Grabar QSO'; btnRec.classList.remove('active');
 }
 
-// 5. CALIBRACIÓN, GUARDIA Y VISUALIZADORES
+// ==========================================
+// 8. CALIBRACIÓN, GUARDIA PASIVA Y VISUALIZADORES
+// ==========================================
 slGain.addEventListener('input', () => { document.getElementById('lblGain').textContent = parseFloat(slGain.value).toFixed(1) + 'x'; if (gainNode) gainNode.gain.value = parseFloat(slGain.value); });
 slOffset.addEventListener('input', () => { const v = parseInt(slOffset.value, 10); document.getElementById('lblOffset').textContent = (v > 0 ? '+' : '') + v + ' dB'; });
 slSq.addEventListener('input', () => { document.getElementById('lblSq').textContent = 'S' + slSq.value; });
 document.getElementById('btnCalS1').addEventListener('click', () => { slOffset.value = Math.max(-30, Math.min(30, Math.round(-70 - rawDbNoOffset))); slOffset.dispatchEvent(new Event('input')); setStatus('Piso calibrado a S1.', 'ok'); });
 document.getElementById('btnCalS9').addEventListener('click', () => { slOffset.value = Math.max(-30, Math.min(30, Math.round(-22 - rawDbNoOffset))); slOffset.dispatchEvent(new Event('input')); setStatus('Referencia calibrada a S9.', 'ok'); });
+
 btnGuard.addEventListener('click', async () => {
-  guardOn = !guardOn; btnGuard.classList.toggle('active', guardOn);
-  btnGuard.textContent = guardOn ? 'Modo Guardia: ON' : 'Modo Guardia: OFF';
-  if (guardOn && 'wakeLock' in navigator) { try { wakeLock = await navigator.wakeLock.request('screen'); } catch(e) {} }
-  else if (wakeLock) { try { await wakeLock.release(); wakeLock = null; } catch(e) {} }
+  guardOn = !guardOn;
+  btnGuard.classList.toggle('active', guardOn);
+  btnGuard.textContent = guardOn ? 'Guardia Pasiva: ON' : 'Guardia Pasiva: OFF';
+  if (guardOn) {
+    if ('wakeLock' in navigator) { try { wakeLock = await navigator.wakeLock.request('screen'); } catch(e) {} }
+    if (!stream && !chromeLiveOn) {
+      // Si el usuario tiene API Key activa Auto-IA + Mic; si no, inicia Dictado Chrome con bitácora
+      if (apiKeyInput.value.trim()) {
+        await btnMic.click();
+        if (!autoVoxOn) btnAutoVox.click();
+      } else {
+        startChromeDictation();
+      }
+    }
+    setStatus('Guardia Pasiva ACTIVA (pantalla despierta y registro habilitado).', 'ok');
+  } else {
+    if (wakeLock) { try { await wakeLock.release(); wakeLock = null; } catch(e) {} }
+    setStatus('Guardia Pasiva desactivada.');
+  }
 });
 
 const mCan = document.getElementById('meterCanvas'), mCtx = mCan.getContext('2d');
@@ -543,6 +1065,7 @@ function loop() {
   document.getElementById('sqLed').classList.toggle('on', sqOpen);
   document.getElementById('sqText').textContent = sqOpen ? `RX ACTIVO (${currentRS})` : 'SQUELCH CERRADO';
   handleVoxSquelch(sqOpen);
+  if (audioCtx) processCwDetector(freqData, audioCtx.sampleRate);
 
   const ww = wCan.width = wCan.clientWidth || 300, wh = wCan.height = 95;
   wCtx.clearRect(0, 0, ww, wh); wCtx.strokeStyle = '#38bdf8'; wCtx.lineWidth = 1.5; wCtx.beginPath();
@@ -561,7 +1084,9 @@ function loop() {
   }
 }
 
-// 6. BOTONES IA, LOG UTC Y PADRÓN ENACOM (INDEXEDDB)
+// ==========================================
+// 9. BOTONES IA, LOG UTC Y PADRÓN ENACOM (LOTES)
+// ==========================================
 document.getElementById('btnSaveKey').addEventListener('click', () => { try { localStorage.setItem('gemini_api_key', apiKeyInput.value.trim()); } catch(e) {} setStatus('API Key guardada.', 'ok'); });
 document.getElementById('btnAiTrans').addEventListener('click', () => { if (!currentAudioBlob) { setStatus('Primero graba un QSO o sube un audio.', 'err'); return; } transcribeBlobWithGemini(currentAudioBlob, false); });
 document.getElementById('btnCopyTrans').addEventListener('click', () => { navigator.clipboard.writeText(transText.value || ''); setStatus('Copiado.', 'ok'); });
@@ -575,7 +1100,7 @@ function renderLogs() {
 renderLogs();
 
 document.getElementById('btnSaveLog').addEventListener('click', () => {
-  const utc = new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
+  const utc = getUtcStamp();
   const call = document.getElementById('inCall').value.trim().toUpperCase();
   const freq = document.getElementById('inFreq').value.trim();
   const notes = document.getElementById('inNotes').value.trim();
@@ -608,32 +1133,96 @@ function openEnacomDB() {
 }
 async function loadEnacomCache() {
   try {
-    const db = await openEnacomDB(), req = db.transaction('padron', 'readonly').objectStore('padron').get('data');
-    req.onsuccess = () => { if (req.result) { enacomMap = req.result; document.getElementById('enacomCount').textContent = Object.keys(enacomMap).length.toLocaleString('es-AR'); } };
+    const db = await openEnacomDB();
+    const countReq = db.transaction('padron', 'readonly').objectStore('padron').count();
+    countReq.onsuccess = () => {
+      document.getElementById('enacomCount').textContent = (countReq.result || 0).toLocaleString('es-AR');
+    };
   } catch (e) {}
 }
 loadEnacomCache();
 
+async function getEnacomInfo(call) {
+  if (enacomMap[call]) return enacomMap[call];
+  try {
+    const db = await openEnacomDB();
+    return await new Promise(res => {
+      const req = db.transaction('padron', 'readonly').objectStore('padron').get(call);
+      req.onsuccess = () => {
+        if (req.result) enacomMap[call] = req.result;
+        res(req.result || null);
+      };
+      req.onerror = () => res(null);
+    });
+  } catch (e) { return null; }
+}
+
 async function saveEnacomText(rawText) {
-  const clean = rawText.replace(/<\/tr>/gi, '\n').replace(/<\/t[dh]>/gi, ' | ').replace(/<[^>]+>/g, ' ');
-  const temp = {}, callRe = /\b((?:LU|LW|LO|LP|LQ|LR|LS|LT|AY|AZ|L[2-9])\d[A-Z]{1,3})\b/i;
-  for (const line of clean.split(/\r?\n/)) {
-    const m = line.match(callRe);
+  if (!rawText || !rawText.trim()) { setStatus('El archivo o texto está vacío.', 'err'); return; }
+  setStatus('Procesando padrón ENACOM...');
+  const unquoted = rawText.replace(/=\r?\n/g, '').replace(/=3D/gi, '=');
+  const callRe = /\b((?:LU|LW|LO|LP|LQ|LR|LS|LT|AY|AZ|L[2-9])\d[A-Z]{1,3})\b/i;
+  const temp = {};
+
+  const rows = unquoted.match(/<tr\b[^>]*>[\s\S]*?<\/tr>/gi) || [];
+  for (let i = 0; i < rows.length; i++) {
+    const cells = (rows[i].match(/<t[dh]\b[^>]*>[\s\S]*?<\/t[dh]>/gi) || [])
+      .map(c => c.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/gi, ' ').replace(/\s+/g, ' ').trim())
+      .filter(Boolean);
+    const joined = cells.join(' | ');
+    const m = joined.match(callRe);
     if (m) {
-      const info = line.replace(m[0], '').replace(/\s+/g, ' ').replace(/^[\s|;,-]+|[\s|;,-]+$/g, '');
-      if (info.length > 2) temp[m[1].toUpperCase()] = info;
+      const call = m[1].toUpperCase();
+      const rest = cells.filter(c => c.toUpperCase() !== call).join(' • ');
+      if (rest.length > 2) temp[call] = rest;
+    }
+    if (i > 0 && i % 2500 === 0) {
+      setStatus(`Leyendo filas ENACOM: ${i.toLocaleString('es-AR')}...`);
+      await new Promise(r => setTimeout(r, 0));
     }
   }
-  const total = Object.keys(temp).length;
+
+  if (!Object.keys(temp).length) {
+    const clean = unquoted.replace(/<\/tr>/gi, '\n').replace(/<\/t[dh]>/gi, ' | ').replace(/<[^>]+>/g, ' ');
+    for (const line of clean.split(/\r?\n/)) {
+      const m = line.match(callRe);
+      if (m) {
+        const info = line.replace(m[0], '').replace(/\s+/g, ' ').replace(/^[\s|;,-]+|[\s|;,-]+$/g, '');
+        if (info.length > 2) temp[m[1].toUpperCase()] = info;
+      }
+    }
+  }
+
+  const entries = Object.entries(temp);
+  const total = entries.length;
   if (!total) { setStatus('No se detectaron indicativos válidos.', 'err'); return; }
+
   enacomMap = temp;
-  const db = await openEnacomDB(), tx = db.transaction('padron', 'readwrite');
-  tx.objectStore('padron').put(enacomMap, 'data');
-  tx.oncomplete = () => {
-    document.getElementById('enacomCount').textContent = total.toLocaleString('es-AR');
-    document.getElementById('enacomPaste').value = '';
-    setStatus(`Padrón ENACOM guardado (${total.toLocaleString('es-AR')} indicativos).`, 'ok');
-  };
+  const db = await openEnacomDB();
+  const batchSize = 1500;
+  await new Promise((res, rej) => {
+    const txClear = db.transaction('padron', 'readwrite');
+    txClear.objectStore('padron').clear();
+    txClear.oncomplete = res;
+    txClear.onerror = () => rej(txClear.error);
+  });
+
+  for (let start = 0; start < total; start += batchSize) {
+    const slice = entries.slice(start, start + batchSize);
+    await new Promise((res, rej) => {
+      const tx = db.transaction('padron', 'readwrite');
+      const store = tx.objectStore('padron');
+      for (const [k, v] of slice) store.put(v, k);
+      tx.oncomplete = res;
+      tx.onerror = () => rej(tx.error);
+    });
+    setStatus(`Guardando en caché: ${Math.min(total, start + batchSize).toLocaleString('es-AR')} / ${total.toLocaleString('es-AR')}...`);
+    await new Promise(r => setTimeout(r, 0));
+  }
+
+  document.getElementById('enacomCount').textContent = total.toLocaleString('es-AR');
+  document.getElementById('enacomPaste').value = '';
+  setStatus(`Padrón ENACOM guardado (${total.toLocaleString('es-AR')} indicativos).`, 'ok');
 }
 document.getElementById('btnSaveEnacom').addEventListener('click', () => saveEnacomText(document.getElementById('enacomPaste').value));
 document.getElementById('enacomFile').addEventListener('change', e => {
@@ -643,11 +1232,13 @@ document.getElementById('enacomFile').addEventListener('change', e => {
 document.getElementById('btnClearEnacom').addEventListener('click', async () => {
   if (!confirm('¿Borrar el padrón guardado en caché?')) return;
   enacomMap = {}; const db = await openEnacomDB();
-  db.transaction('padron', 'readwrite').objectStore('padron').delete('data');
+  db.transaction('padron', 'readwrite').objectStore('padron').clear();
   document.getElementById('enacomCount').textContent = '0'; setStatus('Caché de ENACOM borrada.');
 });
 
-// 7. REGISTRO PWA OFFLINE
+// ==========================================
+// 10. REGISTRO PWA OFFLINE
+// ==========================================
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
