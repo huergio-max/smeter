@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>S-Meter Pro RX — Guardia IA, CW & ENACOM</title>
+  <title>S-Meter Pro RX v2.1 — Guardia IA, CW & ENACOM</title>
   <link rel="manifest" href="manifest.json" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -12,6 +12,7 @@
     .card { background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 12px; }
     .top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
     .title { font-weight: 800; font-size: 1.05rem; color: #38bdf8; }
+    .ver { font-size: 0.7rem; background: #1e3a8a; color: #93c5fd; padding: 2px 6px; border-radius: 999px; margin-left: 6px; vertical-align: middle; }
     .clock-box { text-align: right; font-family: monospace; }
     .utc { font-size: 1.35rem; font-weight: 800; color: #22c55e; }
     .sub { font-size: 0.76rem; color: #94a3b8; }
@@ -87,7 +88,7 @@
   <div class="card">
     <div class="top">
       <div>
-        <div class="title">S-Meter Pro RX</div>
+        <div class="title">S-Meter Pro RX <span class="ver">v2.1</span></div>
         <div class="sub">Guardia Pasiva, CW Morse, Dictado &amp; ENACOM</div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -115,7 +116,7 @@
       <button id="btnRec" class="btn-rec">Grabar QSO</button>
       <label class="file-btn btn-sec">Subir Audio<input id="fileInput" type="file" accept="audio/*" class="hidden" /></label>
     </div>
-    <div id="status" class="status">Listo. Toca "Activar Micrófono" para S-Meter/CW o "Dictado Chrome" para bitácora de voz.</div>
+    <div id="status" class="status">Listo (v2.1). Toca "Activar Micrófono" para S-Meter/CW o "Dictado Chrome" para bitácora de voz.</div>
     <div class="led-bar">
       <div class="led-wrap">
         <div id="sqLed" class="led"></div><span id="sqText">SQUELCH CERRADO</span>
@@ -173,7 +174,6 @@
       <div id="cwSymbols" class="cw-symbols"></div>
     </div>
 
-    <!-- Manipulador Manual y Generador de Texto a Morse -->
     <div class="row" style="margin-top:8px;align-items:stretch;">
       <button id="btnManualKey" class="btn-key" style="flex:1.2;">PULSADOR CW MANUAL (MANTENER)</button>
       <div style="flex:2;display:flex;flex-direction:column;gap:6px;">
@@ -203,7 +203,6 @@
       <a id="btnDownload" class="hidden" style="color:#38bdf8;font-size:0.78rem;font-weight:700;text-decoration:none;">Descargar Audio</a>
     </div>
 
-    <!-- Bitácora en vivo de Chrome con fecha y hora -->
     <div style="margin-top:8px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
         <span class="sub">Registro automático Dictado Chrome (<span id="chromeCount">0</span> entradas):</span>
@@ -313,9 +312,7 @@
 </div>
 
 <script>
-// ==========================================
 // 1. RELOJ UTC Y LOCAL
-// ==========================================
 function getUtcStamp() {
   const now = new Date(), pad = n => String(n).padStart(2, '0');
   return `${now.getUTCFullYear()}-${pad(now.getUTCMonth()+1)}-${pad(now.getUTCDate())} ${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())} UTC`;
@@ -328,9 +325,7 @@ function updateClock() {
 setInterval(updateClock, 250);
 updateClock();
 
-// ==========================================
-// 2. MANUAL ENACOM (BANDAS Y PROCEDIMIENTO)
-// ==========================================
+// 2. MANUAL ENACOM
 const enacomGuides = {
   NOVICIO: {
     resumen: 'Habilitación inicial en HF (bandas atribuidas) y operación plena en VHF/UHF (2 m y 70 cm). Potencia máxima reglamentaria según banda y sub-banda.',
@@ -342,9 +337,9 @@ const enacomGuides = {
       ['2 m (144–148 MHz) y 70 cm (430–440 MHz)', 'FM, Repetidoras, SSB, CW y Modos Digitales / Satélites']
     ],
     procedimiento: [
-      '<b>1. Escucha previa:</b> Escuchar al menos 15–30 segundos y preguntar en frecuencia "¿Está ocupada la frecuencia? Aquí [Tu Indicativo]" antes de llamar.',
-      '<b>2. Llamado General (CQ):</b> En fonía: "CQ, CQ, CQ de [Indicativo en código fonético], [Indicativo] llama y queda atento". En CW: "CQ CQ DE [INDICATIVO] [INDICATIVO] K".',
-      '<b>3. Intercambio estándar:</b> Pasar reporte RS/RST (ej. 59 o 599), nombre del operador, QTH (ciudad/provincia) y Grid Locator.',
+      '<b>1. Escucha previa:</b> Escuchar al menos 15–30 segundos y preguntar "¿Está ocupada la frecuencia? Aquí [Tu Indicativo]" antes de llamar.',
+      '<b>2. Llamado General (CQ):</b> En fonía: "CQ, CQ, CQ de [Indicativo en código fonético], llama y queda atento". En CW: "CQ CQ DE [INDICATIVO] [INDICATIVO] K".',
+      '<b>3. Intercambio estándar:</b> Pasar reporte RS/RST (ej. 59 o 599), nombre del operador, QTH y Grid Locator.',
       '<b>4. Cierre y registro:</b> Despedirse con "73" y asentar hora UTC, frecuencia, indicativo y reporte en el Libro de Guardia.'
     ]
   },
@@ -360,11 +355,11 @@ const enacomGuides = {
     procedimiento: [
       '<b>1. Selección de banda lateral:</b> Usar LSB por debajo de 10 MHz (160, 80, 40 m) y USB por encima de 10 MHz (20, 17, 15, 12, 10 m).',
       '<b>2. Operación DX y Split:</b> Si una estación DX opera en Split, escuchar en su frecuencia de TX y transmitir en la frecuencia de escucha indicada ("UP 5").',
-      '<b>3. Identificación reglamentaria:</b> Transmitir el indicativo completo al inicio, al final y cada 10 minutos durante comunicados prolongados.'
+      '<b>3. Identificación reglamentaria:</b> Transmitir el indicativo completo al inicio, al final y cada 10 minutos.'
     ]
   },
   SUPERIOR: {
-    resumen: 'Acceso total a todas las bandas atribuídas al Servicio de Radioaficionados en Argentina (incluyendo 60 m, 30 m y bandas superiores) y máxima potencia autorizada.',
+    resumen: 'Acceso total a todas las bandas atribuidas al Servicio de Radioaficionados en Argentina (incluyendo 60 m, 30 m y bandas superiores) y máxima potencia autorizada.',
     bandas: [
       ['160 m, 80 m, 60 m (5.351,5–5.366,5 kHz), 40 m', 'Todos los modos autorizados (60 m con límite de potencia EIRP)'],
       ['30 m (10.100–10.150 kHz)', 'Exclusivo CW y Modos Digitales de banda angosta'],
@@ -373,22 +368,18 @@ const enacomGuides = {
     ],
     procedimiento: [
       '<b>1. Guardia y redes de emergencia:</b> Priorizar frecuencias de encuentro y tráfico de emergencia cuando exista alerta vigente.',
-      '<b>2. Control de ancho de banda y pureza espectral:</b> Ajustar nivel de ALC/micrófono para evitar sobremodulación o espurias en bandas adyacentes.',
+      '<b>2. Control de pureza espectral:</b> Ajustar ALC/micrófono para evitar sobremodulación o espurias en bandas adyacentes.',
       '<b>3. Registro de tráfico y QSL:</b> Mantener bitácora UTC precisa para confirmación de contactos y controles técnicos.'
     ]
   }
 };
-
 function renderEnacomGuide(cat) {
   const g = enacomGuides[cat] || enacomGuides.NOVICIO;
   const rows = g.bandas.map(b => `<tr><td><b>${b[0]}</b></td><td>${b[1]}</td></tr>`).join('');
   const steps = g.procedimiento.map(p => `<div style="margin-bottom:4px;">${p}</div>`).join('');
   document.getElementById('enacomCatContent').innerHTML = `
     <p class="sub" style="color:#cbd5e1;margin-top:6px;">${g.resumen}</p>
-    <table class="band-table">
-      <thead><tr><th>Banda / Segmento</th><th>Modos / Notas</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table>
+    <table class="band-table"><thead><tr><th>Banda / Segmento</th><th>Modos / Notas</th></tr></thead><tbody>${rows}</tbody></table>
     <div class="lbl" style="margin-top:10px;">3. PROCEDIMIENTO OPERATIVO RESUMIDO</div>
     <div style="background:#020617;padding:8px;border-radius:8px;border:1px solid #1e293b;font-size:0.8rem;margin-top:4px;">${steps}</div>
     <div class="sub" style="margin-top:6px;">Nota: Verificar siempre la atribución vigente en el Reglamento General de Radioaficionados de ENACOM antes de transmitir.</div>
@@ -399,9 +390,7 @@ document.getElementById('selCatEnacom').addEventListener('change', e => renderEn
 document.getElementById('btnOpenManual').addEventListener('click', () => document.getElementById('manualModal').classList.remove('hidden'));
 document.getElementById('btnCloseManual').addEventListener('click', () => document.getElementById('manualModal').classList.add('hidden'));
 
-// ==========================================
 // 3. CLIMA EN VIVO
-// ==========================================
 let myQth = { lat: -54.8019, lon: -68.3030, name: 'Ushuaia (QTH)' };
 const wxCodes = { 0:'Despejado', 1:'Poco nuboso', 2:'Parc. nublado', 3:'Nublado', 45:'Niebla', 51:'Llovizna', 61:'Lluvia', 71:'Nieve', 80:'Chubascos', 95:'Tormenta' };
 async function loadWeather() {
@@ -421,9 +410,7 @@ document.getElementById('btnGps').addEventListener('click', () => {
   }, () => loadWeather());
 });
 
-// ==========================================
 // 4. BUSCADOR INDICATIVOS, GRID, HAMDB & ENACOM
-// ==========================================
 let enacomMap = {};
 const arProvinces = {
   A:['CABA',-34.60,-58.38], B:['CABA',-34.60,-58.38], C:['CABA',-34.60,-58.38], D:['Buenos Aires',-34.92,-57.95], E:['Buenos Aires',-34.92,-57.95],
@@ -527,9 +514,7 @@ document.getElementById('btnEnacom').addEventListener('click', () => {
   if (call) navigator.clipboard.writeText(call).catch(() => {});
 });
 
-// ==========================================
-// 5. MORSE (CW): TABLA, DECODIFICADOR RX Y KEYER MANUAL
-// ==========================================
+// 5. MORSE (CW): DECODIFICADOR RX Y MANIPULADOR MANUAL
 const MORSE_TO_CHAR = {
   '.-':'A','-...':'B','-.-.':'C','-..':'D','.':'E','..-.':'F','--.':'G','....':'H','..':'I','.---':'J',
   '-.-':'K','.-..':'L','--':'M','-.':'N','---':'O','.--.':'P','--.-':'Q','.-.':'R','...':'S','-':'T',
@@ -546,11 +531,7 @@ try { cwLogs = JSON.parse(localStorage.getItem('smeter_cw_logs_v1') || '[]'); } 
 
 const cwLiveEl = document.getElementById('cwLiveText'), cwSymEl = document.getElementById('cwSymbols');
 const slWpm = document.getElementById('slWpm'), btnCwRx = document.getElementById('btnCwRx');
-
-slWpm.addEventListener('input', () => {
-  cwWpm = parseInt(slWpm.value, 10);
-  document.getElementById('lblWpm').textContent = cwWpm;
-});
+slWpm.addEventListener('input', () => { cwWpm = parseInt(slWpm.value, 10); document.getElementById('lblWpm').textContent = cwWpm; });
 
 function renderCwLogs() {
   document.getElementById('cwLogCount').textContent = cwLogs.length;
@@ -571,63 +552,43 @@ function saveCwEntry(text, mode = 'RX CW') {
 
 function flushCwChar() {
   if (!cwCurSymbols) return;
-  const ch = MORSE_TO_CHAR[cwCurSymbols] || '?';
-  cwDecodedBuffer += ch;
+  cwDecodedBuffer += (MORSE_TO_CHAR[cwCurSymbols] || '?');
   cwLiveEl.textContent = cwDecodedBuffer;
   cwCurSymbols = '';
   cwSymEl.textContent = '';
 }
 
 function processCwDetector(freqData, sampleRate) {
-  // Analizar energía en banda típica CW (500 Hz a 900 Hz)
   const binHz = sampleRate / (freqData.length * 2);
   const startBin = Math.max(1, Math.floor(500 / binHz));
   const endBin = Math.min(freqData.length - 1, Math.ceil(900 / binHz));
   let maxTone = 0, avgNoise = 0;
-  for (let i = startBin; i <= endBin; i++) {
-    if (freqData[i] > maxTone) maxTone = freqData[i];
-  }
+  for (let i = startBin; i <= endBin; i++) if (freqData[i] > maxTone) maxTone = freqData[i];
   for (let i = 1; i < 64; i++) avgNoise += freqData[i];
   avgNoise /= 63;
 
   const isTone = (maxTone > 110 && maxTone > avgNoise * 1.65);
   document.getElementById('cwLed').classList.toggle('cw', isTone);
-
   if (!cwRxOn) return;
-  const now = Date.now();
-  const dotMs = 1200 / cwWpm; // Duración estándar de un punto en ms
 
+  const now = Date.now(), dotMs = 1200 / cwWpm;
   if (isTone && !cwToneActive) {
     const gap = now - cwSilenceStart;
     if (gap > dotMs * 6 && cwDecodedBuffer.trim().length > 0) {
-      // Fin de transmisión / pausa larga -> asentar en bitácora CW si hay texto
-      flushCwChar();
-      saveCwEntry(cwDecodedBuffer, `RX CW (${cwWpm} WPM)`);
-      cwDecodedBuffer = '';
+      flushCwChar(); saveCwEntry(cwDecodedBuffer, `RX CW (${cwWpm} WPM)`); cwDecodedBuffer = '';
     } else if (gap > dotMs * 2.2) {
       flushCwChar();
-      if (gap > dotMs * 5.2 && !cwDecodedBuffer.endsWith(' ')) {
-        cwDecodedBuffer += ' ';
-        cwLiveEl.textContent = cwDecodedBuffer;
-      }
+      if (gap > dotMs * 5.2 && !cwDecodedBuffer.endsWith(' ')) { cwDecodedBuffer += ' '; cwLiveEl.textContent = cwDecodedBuffer; }
     }
-    cwToneActive = true;
-    cwToneStart = now;
+    cwToneActive = true; cwToneStart = now;
   } else if (!isTone && cwToneActive) {
     const dur = now - cwToneStart;
-    if (dur >= dotMs * 0.35) {
-      cwCurSymbols += (dur < dotMs * 2.1) ? '.' : '-';
-      cwSymEl.textContent = cwCurSymbols;
-    }
-    cwToneActive = false;
-    cwSilenceStart = now;
+    if (dur >= dotMs * 0.35) { cwCurSymbols += (dur < dotMs * 2.1) ? '.' : '-'; cwSymEl.textContent = cwCurSymbols; }
+    cwToneActive = false; cwSilenceStart = now;
   } else if (!isTone && !cwToneActive) {
     const gap = now - cwSilenceStart;
     if (cwCurSymbols && gap > dotMs * 2.5) flushCwChar();
-    if (gap > 4500 && cwDecodedBuffer.trim().length > 0) {
-      saveCwEntry(cwDecodedBuffer, `RX CW (${cwWpm} WPM)`);
-      cwDecodedBuffer = '';
-    }
+    if (gap > 4500 && cwDecodedBuffer.trim().length > 0) { saveCwEntry(cwDecodedBuffer, `RX CW (${cwWpm} WPM)`); cwDecodedBuffer = ''; }
   }
 }
 
@@ -639,63 +600,38 @@ btnCwRx.addEventListener('click', () => {
   else setStatus(cwRxOn ? `Decodificador CW activo (${cwWpm} WPM, tono 500–900 Hz).` : 'Decodificador CW detenido.', cwRxOn ? 'ok' : '');
 });
 
-// Manipulador CW Manual (Straight Key + Oscilador local 700 Hz)
 let cwOsc = null, cwOscGain = null, manualDownTime = 0, manualUpTime = Date.now(), manualTimer = null;
 const btnManualKey = document.getElementById('btnManualKey');
-
 function startSidetone() {
   ensureAudioCtx();
   if (!cwOsc) {
-    cwOsc = audioCtx.createOscillator();
-    cwOscGain = audioCtx.createGain();
-    cwOsc.type = 'sine';
-    cwOsc.frequency.value = 700;
-    cwOscGain.gain.value = 0;
-    cwOsc.connect(cwOscGain);
-    cwOscGain.connect(audioCtx.destination);
-    cwOsc.start();
+    cwOsc = audioCtx.createOscillator(); cwOscGain = audioCtx.createGain();
+    cwOsc.type = 'sine'; cwOsc.frequency.value = 700; cwOscGain.gain.value = 0;
+    cwOsc.connect(cwOscGain); cwOscGain.connect(audioCtx.destination); cwOsc.start();
   }
   cwOscGain.gain.setTargetAtTime(0.25, audioCtx.currentTime, 0.005);
 }
-function stopSidetone() {
-  if (cwOscGain && audioCtx) cwOscGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.005);
-}
-
+function stopSidetone() { if (cwOscGain && audioCtx) cwOscGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.005); }
 function keyDown() {
   if (manualDownTime) return;
   clearTimeout(manualTimer);
-  const dotMs = 1200 / cwWpm;
-  const gap = Date.now() - manualUpTime;
-  if (gap > dotMs * 5.5 && cwDecodedBuffer && !cwDecodedBuffer.endsWith(' ')) {
-    flushCwChar();
-    cwDecodedBuffer += ' ';
-    cwLiveEl.textContent = cwDecodedBuffer;
-  } else if (gap > dotMs * 2.2) {
-    flushCwChar();
-  }
-  manualDownTime = Date.now();
-  btnManualKey.classList.add('pressed');
-  startSidetone();
+  const dotMs = 1200 / cwWpm, gap = Date.now() - manualUpTime;
+  if (gap > dotMs * 5.5 && cwDecodedBuffer && !cwDecodedBuffer.endsWith(' ')) { flushCwChar(); cwDecodedBuffer += ' '; cwLiveEl.textContent = cwDecodedBuffer; }
+  else if (gap > dotMs * 2.2) flushCwChar();
+  manualDownTime = Date.now(); btnManualKey.classList.add('pressed'); startSidetone();
 }
-
 function keyUp() {
   if (!manualDownTime) return;
   const dur = Date.now() - manualDownTime;
-  manualDownTime = 0;
-  manualUpTime = Date.now();
-  btnManualKey.classList.remove('pressed');
-  stopSidetone();
+  manualDownTime = 0; manualUpTime = Date.now(); btnManualKey.classList.remove('pressed'); stopSidetone();
   const dotMs = 1200 / cwWpm;
-  cwCurSymbols += (dur < dotMs * 2.1) ? '.' : '-';
-  cwSymEl.textContent = cwCurSymbols;
+  cwCurSymbols += (dur < dotMs * 2.1) ? '.' : '-'; cwSymEl.textContent = cwCurSymbols;
   manualTimer = setTimeout(() => { flushCwChar(); }, dotMs * 2.8);
 }
-
 btnManualKey.addEventListener('pointerdown', e => { e.preventDefault(); keyDown(); });
 btnManualKey.addEventListener('pointerup', e => { e.preventDefault(); keyUp(); });
 btnManualKey.addEventListener('pointerleave', () => keyUp());
 
-// Generador automático de Texto -> Morse (TX / Práctica)
 let cwTxAbort = false;
 document.getElementById('btnPlayCw').addEventListener('click', async () => {
   const txt = document.getElementById('inCwSend').value.trim().toUpperCase();
@@ -705,7 +641,6 @@ document.getElementById('btnPlayCw').addEventListener('click', async () => {
   cwDecodedBuffer += (cwDecodedBuffer ? ' ' : '') + txt;
   cwLiveEl.textContent = cwDecodedBuffer;
   saveCwEntry(txt, `TX CW (${cwWpm} WPM)`);
-
   for (const ch of txt) {
     if (cwTxAbort) break;
     if (ch === ' ') { await new Promise(r => setTimeout(r, dotMs * 4)); continue; }
@@ -721,24 +656,19 @@ document.getElementById('btnPlayCw').addEventListener('click', async () => {
     }
     await new Promise(r => setTimeout(r, dotMs * 2));
   }
-  stopSidetone();
-  cwSymEl.textContent = '';
+  stopSidetone(); cwSymEl.textContent = '';
 });
 document.getElementById('btnStopCw').addEventListener('click', () => { cwTxAbort = true; stopSidetone(); });
 document.getElementById('btnClearCw').addEventListener('click', () => { cwDecodedBuffer = ''; cwCurSymbols = ''; cwLiveEl.textContent = ''; cwSymEl.textContent = ''; });
 document.getElementById('btnSaveCwManual').addEventListener('click', () => { flushCwChar(); saveCwEntry(cwDecodedBuffer, 'Manual CW'); setStatus('Texto CW asentado en bitácora.', 'ok'); });
 document.getElementById('btnClearCwLog').addEventListener('click', () => { if (!confirm('¿Borrar bitácora CW?')) return; cwLogs = []; localStorage.removeItem('smeter_cw_logs_v1'); renderCwLogs(); });
 
-// ==========================================
 // 6. DICTADO EN VIVO DE CHROME CON BITÁCORA
-// ==========================================
 const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition = null, chromeLiveOn = false, resumeMicAfterChrome = false;
 let chromeLogs = [];
 try { chromeLogs = JSON.parse(localStorage.getItem('smeter_chrome_logs_v1') || '[]'); } catch(e) {}
-
-const btnChromeLive = document.getElementById('btnChromeLive');
-const chromeInterimEl = document.getElementById('chromeInterim');
+const btnChromeLive = document.getElementById('btnChromeLive'), chromeInterimEl = document.getElementById('chromeInterim');
 
 function renderChromeLogs() {
   document.getElementById('chromeCount').textContent = chromeLogs.length;
@@ -761,66 +691,37 @@ function addChromeEntry(text) {
 
 function startChromeDictation() {
   if (!SpeechRec) { setStatus('Este navegador no soporta Dictado Web de Chrome.', 'err'); return; }
-  // Liberar micrófono del S-Meter para evitar conflicto en Android
-  if (stream) {
-    resumeMicAfterChrome = true;
-    stopMic();
-  }
+  if (stream) { resumeMicAfterChrome = true; stopMic(); }
   chromeLiveOn = true;
-  btnChromeLive.classList.add('active');
-  btnChromeLive.textContent = 'Dictado Chrome: ON';
+  btnChromeLive.classList.add('active'); btnChromeLive.textContent = 'Dictado Chrome: ON';
   setStatus('Dictado Chrome ACTIVO (S-Meter pausado para evitar choque de micrófono en Android).', 'ok');
-
   recognition = new SpeechRec();
-  recognition.lang = 'es-AR';
-  recognition.continuous = true;
-  recognition.interimResults = true;
-
+  recognition.lang = 'es-AR'; recognition.continuous = true; recognition.interimResults = true;
   recognition.onresult = e => {
     let interim = '';
     for (let i = e.resultIndex; i < e.results.length; i++) {
-      const transcript = e.results[i][0].transcript;
-      if (e.results[i].isFinal) {
-        addChromeEntry(transcript);
-        chromeInterimEl.textContent = '';
-      } else {
-        interim += transcript;
-      }
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) { addChromeEntry(t); chromeInterimEl.textContent = ''; }
+      else interim += t;
     }
     if (interim) chromeInterimEl.textContent = 'Escuchando: ' + interim;
   };
-  recognition.onerror = e => {
-    if (e.error === 'network') setStatus('Dictado Chrome requiere conexión a internet.', 'err');
-  };
-  recognition.onend = () => {
-    if (chromeLiveOn) {
-      try { recognition.start(); } catch(err) {}
-    }
-  };
+  recognition.onerror = e => { if (e.error === 'network') setStatus('Dictado Chrome requiere conexión a internet.', 'err'); };
+  recognition.onend = () => { if (chromeLiveOn) { try { recognition.start(); } catch(err) {} } };
   try { recognition.start(); } catch(err) {}
 }
 
 function stopChromeDictation() {
   chromeLiveOn = false;
-  btnChromeLive.classList.remove('active');
-  btnChromeLive.textContent = 'Dictado Chrome: OFF';
+  btnChromeLive.classList.remove('active'); btnChromeLive.textContent = 'Dictado Chrome: OFF';
   chromeInterimEl.textContent = '';
   if (recognition) { try { recognition.stop(); } catch(e) {} recognition = null; }
   setStatus('Dictado Chrome detenido.');
-  if (resumeMicAfterChrome) {
-    resumeMicAfterChrome = false;
-    btnMic.click();
-  }
+  if (resumeMicAfterChrome) { resumeMicAfterChrome = false; btnMic.click(); }
 }
-
-btnChromeLive.addEventListener('click', () => {
-  if (chromeLiveOn) stopChromeDictation();
-  else startChromeDictation();
-});
-
+btnChromeLive.addEventListener('click', () => { if (chromeLiveOn) stopChromeDictation(); else startChromeDictation(); });
 document.getElementById('btnCopyChrome').addEventListener('click', () => {
-  const txt = chromeLogs.map(c => `[${c.utc} | Local ${c.local}] ${c.text}`).join('\n');
-  navigator.clipboard.writeText(txt);
+  navigator.clipboard.writeText(chromeLogs.map(c => `[${c.utc} | Local ${c.local}] ${c.text}`).join('\n'));
   setStatus('Bitácora de voz copiada.', 'ok');
 });
 document.getElementById('btnClearChrome').addEventListener('click', () => {
@@ -828,9 +729,7 @@ document.getElementById('btnClearChrome').addEventListener('click', () => {
   chromeLogs = []; localStorage.removeItem('smeter_chrome_logs_v1'); renderChromeLogs();
 });
 
-// ==========================================
-// 7. AUDIO, S-METER SUAVE Y AUTO-IA SQUELCH
-// ==========================================
+// 7. AUDIO, S-METER Y AUTO-IA SQUELCH
 let audioCtx = null, stream = null, analyser = null, gainNode = null, rafId = null;
 let fileSourceNode = null, mediaRecorder = null, recChunks = [], recInterval = null, recSec = 0;
 let autoVoxOn = false, voxRecorder = null, voxChunks = [], voxSilenceTimer = null, voxStartTime = 0, voxPeakRS = '';
@@ -979,9 +878,7 @@ function stopRecording() {
   btnRec.textContent = 'Grabar QSO'; btnRec.classList.remove('active');
 }
 
-// ==========================================
 // 8. CALIBRACIÓN, GUARDIA PASIVA Y VISUALIZADORES
-// ==========================================
 slGain.addEventListener('input', () => { document.getElementById('lblGain').textContent = parseFloat(slGain.value).toFixed(1) + 'x'; if (gainNode) gainNode.gain.value = parseFloat(slGain.value); });
 slOffset.addEventListener('input', () => { const v = parseInt(slOffset.value, 10); document.getElementById('lblOffset').textContent = (v > 0 ? '+' : '') + v + ' dB'; });
 slSq.addEventListener('input', () => { document.getElementById('lblSq').textContent = 'S' + slSq.value; });
@@ -995,13 +892,8 @@ btnGuard.addEventListener('click', async () => {
   if (guardOn) {
     if ('wakeLock' in navigator) { try { wakeLock = await navigator.wakeLock.request('screen'); } catch(e) {} }
     if (!stream && !chromeLiveOn) {
-      // Si el usuario tiene API Key activa Auto-IA + Mic; si no, inicia Dictado Chrome con bitácora
-      if (apiKeyInput.value.trim()) {
-        await btnMic.click();
-        if (!autoVoxOn) btnAutoVox.click();
-      } else {
-        startChromeDictation();
-      }
+      if (apiKeyInput.value.trim()) { await btnMic.click(); if (!autoVoxOn) btnAutoVox.click(); }
+      else startChromeDictation();
     }
     setStatus('Guardia Pasiva ACTIVA (pantalla despierta y registro habilitado).', 'ok');
   } else {
@@ -1084,9 +976,7 @@ function loop() {
   }
 }
 
-// ==========================================
 // 9. BOTONES IA, LOG UTC Y PADRÓN ENACOM (LOTES)
-// ==========================================
 document.getElementById('btnSaveKey').addEventListener('click', () => { try { localStorage.setItem('gemini_api_key', apiKeyInput.value.trim()); } catch(e) {} setStatus('API Key guardada.', 'ok'); });
 document.getElementById('btnAiTrans').addEventListener('click', () => { if (!currentAudioBlob) { setStatus('Primero graba un QSO o sube un audio.', 'err'); return; } transcribeBlobWithGemini(currentAudioBlob, false); });
 document.getElementById('btnCopyTrans').addEventListener('click', () => { navigator.clipboard.writeText(transText.value || ''); setStatus('Copiado.', 'ok'); });
@@ -1135,9 +1025,7 @@ async function loadEnacomCache() {
   try {
     const db = await openEnacomDB();
     const countReq = db.transaction('padron', 'readonly').objectStore('padron').count();
-    countReq.onsuccess = () => {
-      document.getElementById('enacomCount').textContent = (countReq.result || 0).toLocaleString('es-AR');
-    };
+    countReq.onsuccess = () => { document.getElementById('enacomCount').textContent = (countReq.result || 0).toLocaleString('es-AR'); };
   } catch (e) {}
 }
 loadEnacomCache();
@@ -1148,10 +1036,7 @@ async function getEnacomInfo(call) {
     const db = await openEnacomDB();
     return await new Promise(res => {
       const req = db.transaction('padron', 'readonly').objectStore('padron').get(call);
-      req.onsuccess = () => {
-        if (req.result) enacomMap[call] = req.result;
-        res(req.result || null);
-      };
+      req.onsuccess = () => { if (req.result) enacomMap[call] = req.result; res(req.result || null); };
       req.onerror = () => res(null);
     });
   } catch (e) { return null; }
@@ -1236,11 +1121,11 @@ document.getElementById('btnClearEnacom').addEventListener('click', async () => 
   document.getElementById('enacomCount').textContent = '0'; setStatus('Caché de ENACOM borrada.');
 });
 
-// ==========================================
-// 10. REGISTRO PWA OFFLINE
-// ==========================================
+// 10. REGISTRO PWA OFFLINE CON ACTUALIZACIÓN AUTOMÁTICA
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(() => {});
+  navigator.serviceWorker.register('./sw.js').then(reg => {
+    reg.update();
+  }).catch(() => {});
 }
 </script>
 </body>
