@@ -671,14 +671,14 @@ document.getElementById('btnAiTrans').addEventListener('click', async () => {
       r.onerror = rej;
       r.readAsDataURL(currentAudioBlob);
     });
-    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`, {
+    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(key)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{
           parts: [
             { text: 'Transcribe fielmente este audio de radioaficionados en español. Respeta indicativos (callsigns), código fonético internacional, reportes RS/RST y códigos Q.' },
-            { inline_data: { mime_type: currentAudioBlob.type || 'audio/webm', data: b64 } }
+            { inline_data: { mime_type: (currentAudioBlob.type || 'audio/webm').split(';')[0], data: b64 } }
           ]
         }]
       })
