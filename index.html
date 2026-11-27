@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>S-Meter Pro RX</title>
+  <title>S-Meter Pro RX — Completo</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -11,106 +11,150 @@
       font-family: system-ui, -apple-system, sans-serif;
       padding: 10px; min-height: 100dvh;
     }
-    .wrap { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+    .wrap { max-width: 960px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
     .card {
       background: #0f172a; border: 1px solid #1e293b;
       border-radius: 12px; padding: 12px;
     }
-    .top {
-      display: flex; justify-content: space-between; align-items: center;
-      flex-wrap: wrap; gap: 8px;
-    }
+    .top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
     .title { font-weight: 800; font-size: 1.05rem; color: #38bdf8; }
     .clock-box { text-align: right; font-family: monospace; }
     .utc { font-size: 1.35rem; font-weight: 800; color: #22c55e; }
-    .subclock { font-size: 0.78rem; color: #94a3b8; }
-    .controls { display: flex; flex-wrap: wrap; gap: 8px; }
-    button {
-      flex: 1; min-width: 130px; padding: 12px 10px; border: none;
-      border-radius: 8px; font-weight: 700; font-size: 0.92rem; cursor: pointer;
+    .sub { font-size: 0.76rem; color: #94a3b8; }
+    .wx-bar {
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;
+      margin-top: 8px; padding-top: 8px; border-top: 1px solid #1e293b;
+      font-size: 0.8rem; color: #cbd5e1;
+    }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; }
+    button, .file-btn {
+      flex: 1; min-width: 110px; padding: 11px 10px; border: none;
+      border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer;
+      text-align: center; display: inline-flex; align-items: center; justify-content: center;
+      text-decoration: none;
     }
     .btn-mic { background: #22c55e; color: #052e16; }
     .btn-mic.active { background: #ef4444; color: #fff; }
     .btn-guard { background: #1e293b; color: #cbd5e1; border: 1px solid #334155; }
     .btn-guard.active { background: #f59e0b; color: #1c1917; border-color: #f59e0b; }
-    .btn-log { background: #0284c7; color: #fff; }
+    .btn-rec { background: #7f1d1d; color: #fecaca; border: 1px solid #ef4444; }
+    .btn-rec.active { background: #ef4444; color: #fff; animation: pulse 1.2s infinite; }
+    .btn-sec { background: #1e293b; color: #e2e8f0; border: 1px solid #334155; }
+    .btn-pri { background: #0284c7; color: #fff; }
+    .btn-qrz { background: #065f46; color: #a7f3d0; border: 1px solid #10b981; }
+    .btn-sm { flex: 0 1 auto; min-width: auto; padding: 6px 10px; font-size: 0.75rem; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.65; } }
     .status {
-      font-family: monospace; font-size: 0.8rem; color: #94a3b8;
+      font-family: monospace; font-size: 0.78rem; color: #94a3b8;
       background: #020617; padding: 8px 10px; border-radius: 6px;
-      border-left: 3px solid #334155;
+      border-left: 3px solid #334155; margin-top: 8px;
     }
     .status.ok { border-left-color: #22c55e; color: #86efac; }
     .status.err { border-left-color: #ef4444; color: #fca5a5; }
-    .meter-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
-    @media (min-width: 680px) { .meter-grid { grid-template-columns: 1.2fr 1fr; } }
-    canvas {
-      width: 100%; display: block; background: #020617;
-      border-radius: 8px; border: 1px solid #1e293b;
-    }
-    .readout {
-      display: flex; justify-content: space-around; align-items: center;
-      margin-top: 8px; text-align: center; font-family: monospace;
-    }
-    .big-s { font-size: 2rem; font-weight: 900; color: #38bdf8; }
-    .big-rs { font-size: 1.6rem; font-weight: 800; color: #facc15; }
-    .lbl { font-size: 0.72rem; color: #94a3b8; }
-    .sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
-    .sl-item label { display: flex; justify-content: space-between; font-size: 0.78rem; color: #cbd5e1; margin-bottom: 4px; }
+    .grid2 { display: grid; grid-template-columns: 1fr; gap: 10px; }
+    @media (min-width: 700px) { .grid2 { grid-template-columns: 1.15fr 1fr; } }
+    canvas { width: 100%; display: block; background: #020617; border-radius: 8px; border: 1px solid #1e293b; }
+    .readout { display: flex; justify-content: space-around; align-items: center; margin: 8px 0; text-align: center; font-family: monospace; }
+    .big-s { font-size: 1.9rem; font-weight: 900; color: #38bdf8; }
+    .big-rs { font-size: 1.5rem; font-weight: 800; color: #facc15; }
+    .lbl { font-size: 0.72rem; color: #94a3b8; font-weight: 700; letter-spacing: 0.4px; }
+    .sliders { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 8px; }
+    @media (min-width: 480px) { .sliders { grid-template-columns: 1fr 1fr 1fr; } }
+    .sl-item label { display: flex; justify-content: space-between; font-size: 0.75rem; color: #cbd5e1; margin-bottom: 3px; }
     input[type=range] { width: 100%; accent-color: #38bdf8; }
-    .led-bar {
-      display: flex; align-items: center; gap: 8px; font-size: 0.85rem;
-      font-weight: 700; margin-top: 8px;
+    input[type=text], input[type=password], select, textarea {
+      width: 100%; background: #020617; color: #f8fafc; border: 1px solid #334155;
+      border-radius: 7px; padding: 8px 10px; font-size: 0.88rem; font-family: inherit;
     }
+    textarea { min-height: 85px; resize: vertical; font-family: monospace; font-size: 0.82rem; }
+    .led-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 0.82rem; font-weight: 700; margin-top: 8px; }
+    .led-wrap { display: flex; align-items: center; gap: 8px; }
     .led { width: 12px; height: 12px; border-radius: 50%; background: #334155; }
     .led.on { background: #22c55e; box-shadow: 0 0 10px #22c55e; }
-    .log-list {
-      max-height: 160px; overflow-y: auto; font-family: monospace;
-      font-size: 0.78rem; margin-top: 8px;
+    audio { width: 100%; height: 38px; margin-top: 8px; }
+    .log-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+    .call-info {
+      margin-top: 8px; padding: 10px; border-radius: 8px;
+      background: #020617; border: 1px solid #1e3a8a;
+      display: flex; flex-direction: column; gap: 6px; font-size: 0.82rem;
     }
-    .log-row {
-      display: flex; justify-content: space-between; padding: 5px 0;
-      border-bottom: 1px solid #1e293b; color: #cbd5e1;
-    }
+    .call-info-top { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
+    .call-badge { font-family: monospace; font-weight: 800; color: #38bdf8; font-size: 0.95rem; }
+    .call-dist { font-family: monospace; color: #facc15; font-weight: 700; }
+    .log-list { max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.76rem; margin-top: 8px; }
+    .log-row { display: flex; flex-direction: column; gap: 2px; padding: 6px 0; border-bottom: 1px solid #1e293b; color: #cbd5e1; }
+    .log-top { display: flex; justify-content: space-between; color: #38bdf8; font-weight: 700; }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="card top">
-    <div>
-      <div class="title">S-Meter Pro RX</div>
-      <div class="subclock">Monitor de Guardia &amp; Reportes RS</div>
+  <!-- ENCABEZADO, RELOJ UTC Y CLIMA -->
+  <div class="card">
+    <div class="top">
+      <div>
+        <div class="title">S-Meter Pro RX</div>
+        <div class="sub">Monitor de Guardia, Reportes RS/RST &amp; QSO</div>
+      </div>
+      <div class="clock-box">
+        <div class="utc" id="utcTime">--:--:-- UTC</div>
+        <div class="sub" id="utcDate">----/--/-- | Local --:--:--</div>
+      </div>
     </div>
-    <div class="clock-box">
-      <div class="utc" id="utcTime">--:--:-- UTC</div>
-      <div class="subclock" id="utcDate">----/--/-- | Local --:--:--</div>
+    <div class="wx-bar">
+      <div id="wxText">Clima: cargando datos de QTH...</div>
+      <button id="btnGps" class="btn-sec btn-sm">Actualizar GPS</button>
     </div>
   </div>
 
+  <!-- CONTROLES PRINCIPALES -->
   <div class="card">
-    <div class="controls">
+    <div class="row">
       <button id="btnMic" class="btn-mic">Activar Micrófono</button>
       <button id="btnGuard" class="btn-guard">Modo Guardia: OFF</button>
-      <button id="btnSave" class="btn-log">Guardar Reporte UTC</button>
+      <button id="btnRec" class="btn-rec">Grabar QSO</button>
+      <label class="file-btn btn-sec">
+        Subir Audio
+        <input id="fileInput" type="file" accept="audio/*" class="hidden" />
+      </label>
     </div>
-    <div id="status" class="status" style="margin-top:8px;">Listo. Toca "Activar Micrófono" para comenzar.</div>
+    <div id="status" class="status">Listo. Toca "Activar Micrófono" o "Subir Audio".</div>
     <div class="led-bar">
-      <div id="sqLed" class="led"></div>
-      <span id="sqText">SQUELCH CERRADO</span>
+      <div class="led-wrap">
+        <div id="sqLed" class="led"></div>
+        <span id="sqText">SQUELCH CERRADO</span>
+      </div>
+      <span id="recTimer" class="sub" style="font-family:monospace;color:#f87171;"></span>
     </div>
   </div>
 
-  <div class="meter-grid">
+  <!-- S-METER + VISUALIZADORES -->
+  <div class="grid2">
     <div class="card">
       <canvas id="meterCanvas" height="170"></canvas>
       <div class="readout">
         <div><div class="big-s" id="valS">S0</div><div class="lbl">SEÑAL</div></div>
         <div><div class="big-rs" id="valRS">R1 S0</div><div class="lbl">REPORTE</div></div>
-        <div><div class="big-rs" id="valDb" style="color:#94a3b8;font-size:1.2rem;">-90 dB</div><div class="lbl">NIVEL</div></div>
+        <div><div class="big-rs" id="valDb" style="color:#94a3b8;font-size:1.15rem;">-90 dB</div><div class="lbl">NIVEL</div></div>
       </div>
+
+      <div class="row" style="margin-bottom:8px;">
+        <button id="btnCalS1" class="btn-sec btn-sm" style="flex:1;">Fijar Piso (S1)</button>
+        <button id="btnCalS9" class="btn-sec btn-sm" style="flex:1;">Calibrar S9 Aquí</button>
+        <select id="selMode" style="width:auto;padding:5px 8px;font-size:0.78rem;">
+          <option value="RS">Fonía (RS)</option>
+          <option value="RST">CW (RST)</option>
+        </select>
+      </div>
+
       <div class="sliders">
         <div class="sl-item">
-          <label><span>Ganancia Mic</span><span id="lblGain">2.0x</span></label>
+          <label><span>Ganancia</span><span id="lblGain">2.0x</span></label>
           <input id="slGain" type="range" min="0.5" max="8" step="0.5" value="2" />
+        </div>
+        <div class="sl-item">
+          <label><span>Base Offset</span><span id="lblOffset">0 dB</span></label>
+          <input id="slOffset" type="range" min="-30" max="30" step="1" value="0" />
         </div>
         <div class="sl-item">
           <label><span>Squelch</span><span id="lblSq">S3</span></label>
@@ -127,11 +171,64 @@
     </div>
   </div>
 
+  <!-- REPRODUCTOR Y TRANSCRIPCIÓN -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+      <span class="lbl">AUDIO GRABADO / SUBIDO Y TRANSCRIPCIÓN</span>
+      <a id="btnDownload" class="hidden" style="color:#38bdf8;font-size:0.78rem;font-weight:700;text-decoration:none;">Descargar Audio</a>
+    </div>
+    <audio id="audioPlayer" controls playsinline></audio>
+
+    <div class="row" style="margin-top:8px;">
+      <button id="btnLiveTrans" class="btn-sec btn-sm" style="flex:1;">Transcribir en Vivo (Chrome)</button>
+      <button id="btnAiTrans" class="btn-pri btn-sm" style="flex:1;">Transcribir Audio (IA Gemini)</button>
+      <button id="btnCopyTrans" class="btn-sec btn-sm">Copiar</button>
+    </div>
+
+    <details style="margin-top:8px;">
+      <summary class="sub" style="cursor:pointer;">Configurar API Key de Gemini (solo si usas IA para audios grabados/subidos)</summary>
+      <div class="row" style="margin-top:6px;">
+        <input id="apiKeyInput" type="password" placeholder="Pega tu API Key de Google AI Studio (AIza...)" />
+        <button id="btnSaveKey" class="btn-sec btn-sm">Guardar Key</button>
+      </div>
+    </details>
+
+    <textarea id="transText" style="margin-top:8px;" placeholder="Aquí aparecerá la transcripción del QSO..."></textarea>
+  </div>
+
+  <!-- MINI LOG UTC CON BUSCADOR DE INDICATIVOS Y QRZ -->
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;">
-      <span class="lbl" style="font-weight:700;">REGISTRO UTC (ÚLTIMOS REPORTES)</span>
-      <button id="btnCsv" style="flex:0;min-width:auto;padding:5px 10px;font-size:0.75rem;background:#1e293b;color:#cbd5e1;">Exportar CSV</button>
+      <span class="lbl">LIBRO DE GUARDIA / BUSCADOR DE INDICATIVOS</span>
+      <div style="display:flex;gap:6px;">
+        <button id="btnCsv" class="btn-sec btn-sm">Exportar CSV</button>
+        <button id="btnClearLog" class="btn-sec btn-sm" style="color:#f87171;">Limpiar</button>
+      </div>
     </div>
+
+    <div class="log-inputs">
+      <input id="inCall" type="text" placeholder="Indicativo (ej: LU1XQD)" style="text-transform:uppercase;" />
+      <input id="inFreq" type="text" placeholder="Frec / Banda (ej: 7.100 LSB)" />
+    </div>
+
+    <!-- PANEL AUTOMÁTICO DE INFO DEL INDICATIVO + DISTANCIA + QRZ -->
+    <div id="callInfoBox" class="call-info hidden">
+      <div class="call-info-top">
+        <span class="call-badge" id="ciCall">—</span>
+        <span class="call-dist" id="ciDist">—</span>
+      </div>
+      <div id="ciLoc" style="color:#e2e8f0;">—</div>
+      <div class="row" style="margin-top:2px;">
+        <a id="btnQrz" href="#" target="_blank" rel="noopener" class="btn-qrz btn-sm" style="flex:1;">Abrir ficha en QRZ.com</a>
+        <a id="btnHamQth" href="#" target="_blank" rel="noopener" class="btn-sec btn-sm" style="flex:1;">Ver en HamQTH</a>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:8px;">
+      <input id="inNotes" type="text" placeholder="Notas / QTH / Nombre..." style="flex:2;" />
+      <button id="btnSaveLog" class="btn-pri" style="flex:1;">Guardar QSO UTC</button>
+    </div>
+
     <div id="logList" class="log-list"></div>
   </div>
 </div>
@@ -150,216 +247,152 @@ function updateClock() {
 setInterval(updateClock, 250);
 updateClock();
 
-// 2. VARIABLES DE AUDIO Y ESTADO
+// 2. QTH PROPIO Y CLIMA EN VIVO (OPEN-METEO)
+let myQth = { lat: -54.8019, lon: -68.3030, name: 'Ushuaia (QTH)' };
+const wxCodes = {
+  0:'Despejado', 1:'Poco nuboso', 2:'Parcialmente nublado', 3:'Nublado',
+  45:'Niebla', 48:'Niebla helada', 51:'Llovizna débil', 53:'Llovizna',
+  61:'Lluvia débil', 63:'Lluvia', 65:'Lluvia fuerte', 71:'Nieve débil',
+  73:'Nieve', 75:'Nieve fuerte', 80:'Chubascos', 95:'Tormenta'
+};
+
+async function loadWeather() {
+  const el = document.getElementById('wxText');
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${myQth.lat}&longitude=${myQth.lon}&current=temperature_2m,wind_speed_10m,wind_direction_10m,weather_code&timezone=auto`;
+    const r = await fetch(url);
+    const d = await r.json();
+    const c = d.current;
+    const desc = wxCodes[c.weather_code] || 'Variable';
+    el.innerHTML = `<b>${myQth.name}:</b> ${Math.round(c.temperature_2m)}°C • ${desc} • Viento ${Math.round(c.wind_speed_10m)} km/h (${c.wind_direction_10m}°)`;
+  } catch (e) {
+    el.textContent = 'Clima: sin conexión (verifique internet).';
+  }
+}
+loadWeather();
+setInterval(loadWeather, 600000);
+
+document.getElementById('btnGps').addEventListener('click', () => {
+  if (!navigator.geolocation) return;
+  document.getElementById('wxText').textContent = 'Obteniendo GPS...';
+  navigator.geolocation.getCurrentPosition(pos => {
+    myQth = { lat: pos.coords.latitude, lon: pos.coords.longitude, name: 'Mi GPS' };
+    loadWeather();
+    lookupCallsign(document.getElementById('inCall').value);
+  }, () => {
+    document.getElementById('wxText').textContent = 'GPS denegado. Usando Ushuaia.';
+    loadWeather();
+  });
+});
+
+// 3. BUSCADOR DE INDICATIVOS (ARGENTINA POR LETRA + DXCC + DISTANCIA Y AZIMUT)
+const arProvinces = {
+  A:['CABA',-34.60,-58.38], B:['CABA',-34.60,-58.38], C:['CABA',-34.60,-58.38],
+  D:['Buenos Aires',-34.92,-57.95], E:['Buenos Aires',-34.92,-57.95],
+  F:['Santa Fe',-31.63,-60.70], G:['Chaco',-27.45,-58.99], H:['Córdoba',-31.42,-64.18],
+  I:['Misiones',-27.36,-55.90], J:['Entre Ríos',-31.73,-60.52], K:['Tucumán',-26.82,-65.22],
+  L:['Corrientes',-27.47,-58.83], M:['Mendoza',-32.89,-68.84], N:['Santiago del Estero',-27.79,-64.26],
+  O:['Salta',-24.78,-65.41], P:['San Juan',-31.53,-68.53], Q:['San Luis',-33.30,-66.33],
+  R:['Catamarca',-28.47,-65.78], S:['La Rioja',-29.41,-66.85], T:['Jujuy',-24.18,-65.30],
+  U:['La Pampa',-36.62,-64.29], V:['Río Negro',-40.81,-63.00], W:['Chubut',-43.30,-65.10],
+  Y:['Neuquén',-38.95,-68.06], Z:['Antártida Argentina / Islas Atl. Sur',-64.24,-56.62]
+};
+
+const dxPrefixes = [
+  ['VP8','Islas Malvinas / Atl. Sur',-51.70,-57.85],
+  ['KC4','Antártida (EE.UU.)',-77.85,166.67],
+  ['CE','Chile',-33.45,-70.66], ['CA','Chile',-33.45,-70.66], ['CB','Chile',-33.45,-70.66], ['XQ','Chile',-33.45,-70.66],
+  ['CX','Uruguay',-34.90,-56.16], ['PY','Brasil',-15.79,-47.88], ['PP','Brasil',-15.79,-47.88], ['PU','Brasil',-23.55,-46.63],
+  ['ZP','Paraguay',-25.26,-57.57], ['CP','Bolivia',-16.50,-68.15], ['OA','Perú',-12.04,-77.04],
+  ['HC','Ecuador',-0.18,-78.47], ['HK','Colombia',4.71,-74.07], ['YV','Venezuela',10.48,-66.90],
+  ['XE','México',19.43,-99.13], ['EA','España',40.42,-3.70], ['CT','Portugal',38.72,-9.14],
+  ['DL','Alemania',52.52,13.40], ['F','Francia',48.86,2.35], ['G','Reino Unido',51.51,-0.13],
+  ['I','Italia',41.90,12.50], ['JA','Japón',35.68,139.65], ['VK','Australia',-33.87,151.21],
+  ['ZL','Nueva Zelanda',-41.29,174.78], ['ZS','Sudáfrica',-25.75,28.19],
+  ['W','Estados Unidos',39.83,-98.58], ['K','Estados Unidos',39.83,-98.58], ['N','Estados Unidos',39.83,-98.58], ['AA','Estados Unidos',39.83,-98.58],
+  ['VE','Canadá',45.42,-75.70], ['VA','Canadá',45.42,-75.70]
+];
+
+function calcDistBearing(lat1, lon1, lat2, lon2) {
+  const R = 6371, toRad = d => d * Math.PI / 180, toDeg = r => r * 180 / Math.PI;
+  const dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  const km = Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+  const y = Math.sin(dLon) * Math.cos(toRad(lat2));
+  const x = Math.cos(toRad(lat1))*Math.sin(toRad(lat2)) - Math.sin(toRad(lat1))*Math.cos(toRad(lat2))*Math.cos(dLon);
+  const az = (Math.round(toDeg(Math.atan2(y, x))) + 360) % 360;
+  return { km, az };
+}
+
+function lookupCallsign(raw) {
+  const call = (raw || '').trim().toUpperCase().replace(/[^A-Z0-9/]/g, '');
+  const box = document.getElementById('callInfoBox');
+  if (call.length < 3) { box.classList.add('hidden'); return; }
+
+  const baseCall = call.split('/')[0];
+  let country = 'Prefijo desconocido', region = '', lat = null, lon = null;
+
+  // Chequeo Argentina (LU, LW, LO-LT, AY, AZ, L2-L9)
+  const arMatch = baseCall.match(/^(LU|LW|LO|LP|LQ|LR|LS|LT|AY|AZ|L[2-9])(\d)([A-Z])([A-Z]?)/);
+  if (arMatch) {
+    country = 'Argentina';
+    const l1 = arMatch[3], l2 = arMatch[4] || '';
+    if (l1 === 'X') {
+      if (l2 >= 'P' && l2 <= 'Z') { region = 'Tierra del Fuego (XP–XZ)'; lat = -54.80; lon = -68.30; }
+      else { region = 'Santa Cruz (XA–XO)'; lat = -51.62; lon = -69.22; }
+    } else if (arProvinces[l1]) {
+      [region, lat, lon] = arProvinces[l1];
+    } else {
+      region = 'Provincia no identificada';
+    }
+  } else {
+    for (const [pref, name, pLat, pLon] of dxPrefixes) {
+      if (baseCall.startsWith(pref)) { country = name; lat = pLat; lon = pLon; break; }
+    }
+  }
+
+  document.getElementById('ciCall').textContent = call;
+  document.getElementById('ciLoc').textContent = region ? `${country} — ${region}` : country;
+  if (lat !== null && lon !== null) {
+    const { km, az } = calcDistBearing(myQth.lat, myQth.lon, lat, lon);
+    document.getElementById('ciDist').textContent = `~${km.toLocaleString('es-AR')} km • Az ${az}°`;
+  } else {
+    document.getElementById('ciDist').textContent = 'Distancia N/D';
+  }
+  document.getElementById('btnQrz').href = `https://www.qrz.com/db/${encodeURIComponent(baseCall)}`;
+  document.getElementById('btnHamQth').href = `https://www.hamqth.com/${encodeURIComponent(baseCall)}`;
+  box.classList.remove('hidden');
+}
+
+document.getElementById('inCall').addEventListener('input', (e) => lookupCallsign(e.target.value));
+
+// 4. ESTADO GLOBAL AUDIO Y LOG
 let audioCtx = null, stream = null, analyser = null, gainNode = null, rafId = null;
-let wakeLock = null, guardOn = false;
-let smoothS = 0, currentSLabel = 'S0', currentRS = 'R1 S0', currentDb = -90;
+let fileSourceNode = null, mediaRecorder = null, recChunks = [], recInterval = null, recSec = 0;
+let currentAudioBlob = null, wakeLock = null, guardOn = false;
+let smoothS = 0, peakS = 0, peakHoldFrames = 0;
+let currentSLabel = 'S0', currentRS = 'R1 S0', currentDb = -90, rawDbNoOffset = -90;
 let logs = [];
-try { logs = JSON.parse(localStorage.getItem('smeter_logs') || '[]'); } catch(e) {}
+try { logs = JSON.parse(localStorage.getItem('smeter_logs_v2') || '[]'); } catch(e) {}
 
 const statusEl = document.getElementById('status');
 const btnMic = document.getElementById('btnMic');
 const btnGuard = document.getElementById('btnGuard');
+const btnRec = document.getElementById('btnRec');
 const slGain = document.getElementById('slGain');
+const slOffset = document.getElementById('slOffset');
 const slSq = document.getElementById('slSq');
+const selMode = document.getElementById('selMode');
+const audioPlayer = document.getElementById('audioPlayer');
+const btnDownload = document.getElementById('btnDownload');
+const transText = document.getElementById('transText');
 
 function setStatus(msg, cls='') {
   statusEl.textContent = msg;
   statusEl.className = 'status ' + cls;
 }
 
-// 3. ACTIVAR / DETENER MICRÓFONO (ANDROID SAFE)
-btnMic.addEventListener('click', async () => {
-  if (stream) { stopMic(); return; }
-  try {
-    setStatus('Solicitando permiso de micrófono...');
-    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    audioCtx = new AudioContextClass();
-    if (audioCtx.state === 'suspended') await audioCtx.resume();
-
-    const src = audioCtx.createMediaStreamSource(stream);
-    gainNode = audioCtx.createGain();
-    gainNode.gain.value = parseFloat(slGain.value);
-
-    analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 1024;
-    analyser.smoothingTimeConstant = 0.75;
-
-    // Mute gain a destination para evitar que Chrome Android duerma el grafo
-    const mute = audioCtx.createGain();
-    mute.gain.value = 0;
-
-    src.connect(gainNode);
-    gainNode.connect(analyser);
-    analyser.connect(mute);
-    mute.connect(audioCtx.destination);
-
-    btnMic.textContent = 'Detener Micrófono';
-    btnMic.classList.add('active');
-    setStatus('Micrófono ACTIVO — Recibiendo audio en vivo', 'ok');
-    loop();
-  } catch (err) {
-    setStatus('Error de micrófono: ' + err.name + ' - ' + err.message, 'err');
-  }
-});
-
-function stopMic() {
-  if (rafId) cancelAnimationFrame(rafId);
-  if (stream) stream.getTracks().forEach(t => t.stop());
-  if (audioCtx) audioCtx.close();
-  stream = null; audioCtx = null; analyser = null;
-  btnMic.textContent = 'Activar Micrófono';
-  btnMic.classList.remove('active');
-  setStatus('Micrófono detenido.');
-}
-
-slGain.addEventListener('input', () => {
-  document.getElementById('lblGain').textContent = parseFloat(slGain.value).toFixed(1) + 'x';
-  if (gainNode) gainNode.gain.value = parseFloat(slGain.value);
-});
-slSq.addEventListener('input', () => {
-  document.getElementById('lblSq').textContent = 'S' + slSq.value;
-});
-
-// 4. MODO GUARDIA (WAKE LOCK)
-btnGuard.addEventListener('click', async () => {
-  guardOn = !guardOn;
-  btnGuard.classList.toggle('active', guardOn);
-  btnGuard.textContent = guardOn ? 'Modo Guardia: ON' : 'Modo Guardia: OFF';
-  if (guardOn && 'wakeLock' in navigator) {
-    try { wakeLock = await navigator.wakeLock.request('screen'); } catch(e) {}
-  } else if (wakeLock) {
-    try { await wakeLock.release(); wakeLock = null; } catch(e) {}
-  }
-});
-
-// 5. DIBUJO S-METER, ONDA Y ESPECTRO
-const mCan = document.getElementById('meterCanvas'), mCtx = mCan.getContext('2d');
-const wCan = document.getElementById('waveCanvas'), wCtx = wCan.getContext('2d');
-const fCan = document.getElementById('fftCanvas'), fCtx = fCan.getContext('2d');
-
-function drawMeter(sVal) {
-  const w = mCan.width = mCan.clientWidth || 300;
-  const h = mCan.height = 170;
-  mCtx.clearRect(0, 0, w, h);
-  const cx = w / 2, cy = h - 18, r = Math.min(w * 0.42, 130);
-
-  // Arco S1-S9 (verde/cyan) y +10/+60 (rojo)
-  mCtx.lineWidth = 10;
-  mCtx.beginPath(); mCtx.arc(cx, cy, r, Math.PI, Math.PI * 1.65);
-  mCtx.strokeStyle = '#0ea5e9'; mCtx.stroke();
-  mCtx.beginPath(); mCtx.arc(cx, cy, r, Math.PI * 1.65, Math.PI * 2);
-  mCtx.strokeStyle = '#ef4444'; mCtx.stroke();
-
-  // Etiquetas
-  const marks = ['1','3','5','7','9','+20','+40'];
-  mCtx.fillStyle = '#94a3b8'; mCtx.font = 'bold 11px monospace'; mCtx.textAlign = 'center';
-  marks.forEach((txt, i) => {
-    const ang = Math.PI + (i / (marks.length - 1)) * Math.PI;
-    mCtx.fillText(txt, cx + Math.cos(ang) * (r - 20), cy + Math.sin(ang) * (r - 20));
-  });
-
-  // Aguja (sVal de 0 a 15 -> S0 a S9+60)
-  const norm = Math.max(0, Math.min(1, sVal / 15));
-  const ang = Math.PI + norm * Math.PI;
-  mCtx.beginPath(); mCtx.moveTo(cx, cy);
-  mCtx.lineTo(cx + Math.cos(ang) * (r - 6), cy + Math.sin(ang) * (r - 6));
-  mCtx.strokeStyle = '#facc15'; mCtx.lineWidth = 3; mCtx.stroke();
-  mCtx.beginPath(); mCtx.arc(cx, cy, 6, 0, Math.PI * 2);
-  mCtx.fillStyle = '#e2e8f0'; mCtx.fill();
-}
-drawMeter(0);
-
-function loop() {
-  if (!analyser) return;
-  rafId = requestAnimationFrame(loop);
-
-  const timeData = new Float32Array(analyser.fftSize);
-  analyser.getFloatTimeDomainData(timeData);
-  const freqData = new Uint8Array(analyser.frequencyBinCount);
-  analyser.getByteFrequencyData(freqData);
-
-  // Calcular RMS -> dBFS -> Unidades S
-  let sum = 0;
-  for (let i = 0; i < timeData.length; i++) sum += timeData[i] * timeData[i];
-  const rms = Math.sqrt(sum / timeData.length);
-  const db = rms > 0.00001 ? 20 * Math.log10(rms) : -90;
-  currentDb = Math.round(db);
-
-  // Mapeo práctico: -70 dBFS = S1, -22 dBFS = S9 (6 dB por unidad S)
-  const rawS = Math.max(0, Math.min(15, (db + 76) / 6));
-  smoothS = smoothS * 0.75 + rawS * 0.25;
-
-  const sInt = Math.round(smoothS);
-  if (sInt <= 9) {
-    currentSLabel = 'S' + sInt;
-  } else {
-    currentSLabel = 'S9+' + ((sInt - 9) * 10);
-  }
-  const rVal = sInt >= 7 ? 5 : sInt >= 5 ? 4 : sInt >= 3 ? 3 : sInt >= 1 ? 2 : 1;
-  currentRS = `R${rVal} ${currentSLabel}`;
-
-  document.getElementById('valS').textContent = currentSLabel;
-  document.getElementById('valRS').textContent = currentRS;
-  document.getElementById('valDb').textContent = `${currentDb} dB`;
-  drawMeter(smoothS);
-
-  // Squelch
-  const sqOpen = smoothS >= parseInt(slSq.value, 10);
-  document.getElementById('sqLed').classList.toggle('on', sqOpen);
-  document.getElementById('sqText').textContent = sqOpen ? `RX ACTIVO (${currentRS})` : 'SQUELCH CERRADO';
-
-  // Onda
-  const ww = wCan.width = wCan.clientWidth || 300, wh = wCan.height = 95;
-  wCtx.clearRect(0, 0, ww, wh);
-  wCtx.strokeStyle = '#38bdf8'; wCtx.lineWidth = 1.5; wCtx.beginPath();
-  for (let i = 0; i < timeData.length; i++) {
-    const x = (i / timeData.length) * ww;
-    const y = (0.5 - timeData[i] * 0.48) * wh;
-    if (i === 0) wCtx.moveTo(x, y); else wCtx.lineTo(x, y);
-  }
-  wCtx.stroke();
-
-  // Espectro FFT
-  const fw = fCan.width = fCan.clientWidth || 300, fh = fCan.height = 110;
-  fCtx.clearRect(0, 0, fw, fh);
-  const bars = 64;
-  const bw = fw / bars;
-  for (let i = 0; i < bars; i++) {
-    const v = freqData[i * 2] / 255;
-    const bh = v * fh;
-    fCtx.fillStyle = v > 0.7 ? '#ef4444' : v > 0.4 ? '#facc15' : '#22c55e';
-    fCtx.fillRect(i * bw, fh - bh, bw - 1, bh);
-  }
-}
-
-// 6. MINI LOG UTC
-function renderLogs() {
-  const el = document.getElementById('logList');
-  if (!logs.length) { el.innerHTML = '<div class="subclock">Sin registros todavía.</div>'; return; }
-  el.innerHTML = logs.map(l =>
-    `<div class="log-row"><span>${l.utc}</span><span><b>${l.rs}</b> (${l.db} dB)</span></div>`
-  ).join('');
-}
-renderLogs();
-
-document.getElementById('btnSave').addEventListener('click', () => {
-  const now = new Date();
-  const utc = now.toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
-  logs.unshift({ utc, rs: currentRS, db: currentDb });
-  if (logs.length > 50) logs.pop();
-  try { localStorage.setItem('smeter_logs', JSON.stringify(logs)); } catch(e) {}
-  renderLogs();
-});
-
-document.getElementById('btnCsv').addEventListener('click', () => {
-  const csv = 'Fecha_Hora_UTC,Reporte_RS,Nivel_dBFS\n' + logs.map(l => `${l.utc},${l.rs},${l.db}`).join('\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-  a.download = 'smeter_log_utc.csv';
-  a.click();
-});
-</script>
-</body>
-</html>
+function ensureAudioCtx() {
+  if (!audioCtx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    a
