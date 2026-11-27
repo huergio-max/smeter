@@ -1,4 +1,4 @@
-const CACHE = 'smeter-v1';
+const CACHE = 'smeter-v2';
 const FILES = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', e => {
