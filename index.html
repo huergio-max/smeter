@@ -2,793 +2,364 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>S-Meter Pro RX — Radioaficionados SDR</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>S-Meter Pro RX</title>
   <style>
-    /* =====================================================================
-       ESTILOS PUROS SDR OSCURO — CERO DEPENDENCIAS EXTERNAS
-       100% fluido para vertical (portrait) y horizontal (landscape)
-       ===================================================================== */
-    :root {
-      --bg: #05080d;
-      --panel: #0b111b;
-      --card: #111a2a;
-      --border: #1e2d45;
-      --text: #e2e8f0;
-      --muted: #8b9bb4;
-      --green: #22c55e;
-      --cyan: #06b6d4;
-      --amber: #f59e0b;
-      --red: #ef4444;
-      --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-    }
-
-    *, *::before, *::after {
-      box-sizing: border-box;
-    }
-
-    html, body {
-      margin: 0;
-      padding: 0;
-      min-height: 100dvh;
-      width: 100%;
-      overflow-x: hidden;
-      overflow-y: auto;
-      background-color: var(--bg);
-      color: var(--text);
-      font-family: var(--font-sans);
-      -webkit-font-smoothing: antialiased;
-    }
-
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background-image:
-        radial-gradient(circle at 12% 4%, rgba(34, 197, 94, 0.08), transparent 36%),
-        radial-gradient(circle at 88% 8%, rgba(6, 182, 212, 0.09), transparent 36%);
+      background: #060b14; color: #e2e8f0;
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 10px; min-height: 100dvh;
     }
-
-    /* Toast flotante (reemplaza alert) */
-    #toast-container {
-      position: fixed;
-      top: 12px;
-      right: 12px;
-      z-index: 999;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      max-width: min(340px, calc(100vw - 24px));
-      pointer-events: none;
+    .wrap { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+    .card {
+      background: #0f172a; border: 1px solid #1e293b;
+      border-radius: 12px; padding: 12px;
     }
-    .toast {
-      pointer-events: auto;
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-size: 13px;
-      font-weight: 600;
-      border: 1px solid var(--border);
-      background: rgba(17, 26, 42, 0.96);
-      color: #f1f5f9;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.55);
-      transition: opacity 0.25s ease, transform 0.25s ease;
+    .top {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 8px;
     }
-    .toast.success { border-color: rgba(34, 197, 94, 0.55); background: rgba(6, 42, 24, 0.96); color: #bbf7d0; }
-    .toast.error   { border-color: rgba(239, 68, 68, 0.55); background: rgba(58, 12, 18, 0.96); color: #fecaca; }
-    .toast.warn    { border-color: rgba(245, 158, 11, 0.55); background: rgba(56, 36, 8, 0.96); color: #fde68a; }
-
-    /* Encabezado SDR */
-    header {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      background: rgba(5, 8, 13, 0.95);
-      border-bottom: 1px solid var(--border);
-      padding: 10px 12px;
+    .title { font-weight: 800; font-size: 1.05rem; color: #38bdf8; }
+    .clock-box { text-align: right; font-family: monospace; }
+    .utc { font-size: 1.35rem; font-weight: 800; color: #22c55e; }
+    .subclock { font-size: 0.78rem; color: #94a3b8; }
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; }
+    button {
+      flex: 1; min-width: 130px; padding: 12px 10px; border: none;
+      border-radius: 8px; font-weight: 700; font-size: 0.92rem; cursor: pointer;
     }
-    .header-inner {
-      max-width: 1260px;
-      margin: 0 auto;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
+    .btn-mic { background: #22c55e; color: #052e16; }
+    .btn-mic.active { background: #ef4444; color: #fff; }
+    .btn-guard { background: #1e293b; color: #cbd5e1; border: 1px solid #334155; }
+    .btn-guard.active { background: #f59e0b; color: #1c1917; border-color: #f59e0b; }
+    .btn-log { background: #0284c7; color: #fff; }
+    .status {
+      font-family: monospace; font-size: 0.8rem; color: #94a3b8;
+      background: #020617; padding: 8px 10px; border-radius: 6px;
+      border-left: 3px solid #334155;
     }
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .brand-icon {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #10b981, #06b6d4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: var(--font-mono);
-      font-weight: 800;
-      font-size: 14px;
-      color: #03110c;
-      flex-shrink: 0;
-    }
-    .brand h1 {
-      margin: 0;
-      font-size: 17px;
-      font-weight: 800;
-      letter-spacing: -0.01em;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .badge-sdr {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 6px;
-      background: rgba(34, 197, 94, 0.16);
-      color: #4ade80;
-      border: 1px solid rgba(34, 197, 94, 0.35);
-    }
-    .brand-sub {
-      margin: 2px 0 0 0;
-      font-size: 11px;
-      color: var(--muted);
-    }
-
-    /* Reloj UTC grande y prioritario */
-    .clock-lcd {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 8px 14px;
-      border-radius: 12px;
-      background: linear-gradient(180deg, #040a10 0%, #07141f 100%);
-      border: 1px solid rgba(6, 182, 212, 0.4);
-      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.8);
-      flex: 1 1 auto;
-      justify-content: space-between;
-      max-width: 380px;
-    }
-    .utc-main {
-      display: flex;
-      align-items: baseline;
-      gap: 6px;
-    }
-    #utc-clock {
-      font-family: var(--font-mono);
-      font-size: 24px;
-      font-weight: 800;
-      color: #22d3ee;
-      letter-spacing: 0.04em;
-      line-height: 1;
-      text-shadow: 0 0 10px rgba(34, 211, 238, 0.45);
-    }
-    .utc-tag {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      font-weight: 800;
-      color: #4ade80;
-    }
-    #utc-date {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: #94a3b8;
-      margin-top: 3px;
-    }
-    .clock-sep {
-      width: 1px;
-      height: 30px;
-      background: #1e2d45;
-    }
-    .local-box {
-      text-align: right;
-    }
-    .local-label {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: #64748b;
-      text-transform: uppercase;
-    }
-    #local-clock {
-      font-family: var(--font-mono);
-      font-size: 14px;
-      font-weight: 700;
-      color: #cbd5e1;
-      margin-top: 2px;
-    }
-
-    /* Contenedor principal */
-    main {
-      max-width: 1260px;
-      margin: 0 auto;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    /* Paneles y tarjetas */
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 14px;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.38);
-    }
-    .panel-title {
-      margin: 0 0 10px 0;
-      font-size: 12px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #cbd5e1;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .dot {
-      display: inline-block;
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: #64748b;
-      margin-right: 6px;
-      vertical-align: middle;
-    }
-    .dot.green { background: var(--green); box-shadow: 0 0 8px var(--green); }
-    .dot.cyan  { background: var(--cyan);  box-shadow: 0 0 8px var(--cyan); }
-    .dot.amber { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
-    .dot.red   { background: var(--red);   box-shadow: 0 0 8px var(--red); }
-
-    /* Botones táctiles grandes */
-    .controls-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 10px;
-    }
-    button, .file-btn {
-      font-family: var(--font-sans);
-      font-size: 13px;
-      font-weight: 700;
-      padding: 12px 14px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      background: var(--card);
-      color: var(--text);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      text-align: center;
-      transition: transform 0.1s ease, filter 0.15s ease, background 0.15s ease;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-    }
-    button:active, .file-btn:active {
-      transform: scale(0.97);
-    }
-    button:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
-    .btn-primary {
-      background: linear-gradient(135deg, #22c55e, #06b6d4);
-      color: #04130d;
-      border: none;
-    }
-    .btn-danger {
-      background: rgba(239, 68, 68, 0.18);
-      color: #fecaca;
-      border-color: rgba(239, 68, 68, 0.5);
-    }
-    .btn-amber {
-      background: rgba(245, 158, 11, 0.18);
-      color: #fde68a;
-      border-color: rgba(245, 158, 11, 0.5);
-    }
-    .btn-cyan {
-      background: rgba(6, 182, 212, 0.18);
-      color: #a5f3fc;
-      border-color: rgba(6, 182, 212, 0.5);
-    }
-    .btn-guard-on {
-      background: linear-gradient(135deg, #06b6d4, #22c55e);
-      color: #031510;
-      border: none;
-    }
-    .btn-sm {
-      padding: 8px 11px;
-      font-size: 12px;
-      border-radius: 10px;
-    }
-
-    /* Barra de diagnóstico */
-    .diag-bar {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 8px;
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px solid var(--border);
-    }
-    .diag-item {
-      background: #060b13;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 7px 10px;
-    }
-    .diag-lbl {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: #64748b;
-      text-transform: uppercase;
-    }
-    .diag-val {
-      font-family: var(--font-mono);
-      font-size: 12px;
-      font-weight: 700;
-      color: #e2e8f0;
-      margin-top: 3px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    /* Banner rojo de error honesto */
-    #mic-error-box {
-      display: none;
-      margin-top: 10px;
-      padding: 12px 14px;
-      border-radius: 12px;
-      background: rgba(127, 29, 29, 0.45);
-      border: 1px solid rgba(239, 68, 68, 0.6);
-      color: #fecaca;
-      font-size: 13px;
-      line-height: 1.45;
-    }
-    #mic-error-box.show {
-      display: block;
-    }
-    .error-code-tag {
-      display: inline-block;
-      margin-top: 6px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      padding: 3px 8px;
-      border-radius: 6px;
-      background: rgba(0, 0, 0, 0.4);
-      color: #fca5a5;
-    }
-
-    /* Fila de opciones rápidas (Preamp, Audio Crudo, Guardia Squelch) */
-    .options-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-      gap: 10px;
-      margin-top: 12px;
-    }
-    .opt-box {
-      background: #060b13;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .opt-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 12px;
-      font-weight: 600;
-      color: #cbd5e1;
-      gap: 8px;
-    }
-    .mono-pill {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 700;
-      padding: 2px 7px;
-      border-radius: 6px;
-      background: rgba(34, 197, 94, 0.15);
-      color: #4ade80;
-      border: 1px solid rgba(34, 197, 94, 0.35);
-    }
-    input[type="range"] {
-      width: 100%;
-      accent-color: #22c55e;
-      cursor: pointer;
-    }
-    .check-label {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      font-size: 12px;
-      color: #cbd5e1;
-      cursor: pointer;
-    }
-    .check-label input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      accent-color: #06b6d4;
-      flex-shrink: 0;
-    }
-
-    /* LED Guardia Squelch */
-    .squelch-led-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 10px;
-      background: #04080f;
-      border: 1px solid var(--border);
-      margin-top: 10px;
-      flex-wrap: wrap;
-    }
-    .squelch-status {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      font-weight: 700;
-      color: #94a3b8;
-    }
-    .squelch-led {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: #334155;
-      transition: background 0.1s, box-shadow 0.1s;
-    }
-    .squelch-led.open {
-      background: #22c55e;
-      box-shadow: 0 0 12px #22c55e, 0 0 22px rgba(34, 197, 94, 0.6);
-    }
-    .squelch-status.open {
-      color: #4ade80;
-    }
-
-    /* Layout responsivo 2 columnas (Horizontal / Landscape / Tablet / PC) */
-    .split-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 14px;
-    }
-    @media (min-width: 720px), (orientation: landscape) and (min-width: 600px) {
-      .split-grid {
-        grid-template-columns: 1.15fr 0.85fr;
-      }
-      .split-grid.equal {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-
-    /* Pantallas LCD y Canvas */
-    .lcd-box {
-      background: linear-gradient(180deg, #03080e 0%, #07121b 100%);
-      border: 1px solid rgba(6, 182, 212, 0.25);
-      border-radius: 14px;
-      padding: 10px;
-      box-shadow: inset 0 2px 14px rgba(0, 0, 0, 0.85);
-    }
-    .canvas-wrap {
-      position: relative;
-      width: 100%;
-      overflow: hidden;
-      border-radius: 10px;
-      background: #02060b;
-      border: 1px solid #162235;
-    }
-    #smeter-wrap { height: 210px; }
-    #wave-wrap   { height: 155px; }
-    #spec-wrap   { height: 155px; }
+    .status.ok { border-left-color: #22c55e; color: #86efac; }
+    .status.err { border-left-color: #ef4444; color: #fca5a5; }
+    .meter-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+    @media (min-width: 680px) { .meter-grid { grid-template-columns: 1.2fr 1fr; } }
     canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
+      width: 100%; display: block; background: #020617;
+      border-radius: 8px; border: 1px solid #1e293b;
     }
-
-    /* Lecturas digitales S-Meter */
-    .digital-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-top: 10px;
+    .readout {
+      display: flex; justify-content: space-around; align-items: center;
+      margin-top: 8px; text-align: center; font-family: monospace;
     }
-    .digital-cell {
-      background: rgba(0, 0, 0, 0.45);
-      border: 1px solid #17253a;
-      border-radius: 10px;
-      padding: 8px 6px;
-      text-align: center;
+    .big-s { font-size: 2rem; font-weight: 900; color: #38bdf8; }
+    .big-rs { font-size: 1.6rem; font-weight: 800; color: #facc15; }
+    .lbl { font-size: 0.72rem; color: #94a3b8; }
+    .sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+    .sl-item label { display: flex; justify-content: space-between; font-size: 0.78rem; color: #cbd5e1; margin-bottom: 4px; }
+    input[type=range] { width: 100%; accent-color: #38bdf8; }
+    .led-bar {
+      display: flex; align-items: center; gap: 8px; font-size: 0.85rem;
+      font-weight: 700; margin-top: 8px;
     }
-    .digital-lbl {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: #64748b;
-      text-transform: uppercase;
+    .led { width: 12px; height: 12px; border-radius: 50%; background: #334155; }
+    .led.on { background: #22c55e; box-shadow: 0 0 10px #22c55e; }
+    .log-list {
+      max-height: 160px; overflow-y: auto; font-family: monospace;
+      font-size: 0.78rem; margin-top: 8px;
     }
-    .digital-num {
-      font-family: var(--font-mono);
-      font-size: 18px;
-      font-weight: 800;
-      color: #4ade80;
-      margin-top: 2px;
-    }
-    .digital-num.cyan { color: #22d3ee; font-size: 15px; }
-    .digital-num.amber { color: #fbbf24; font-size: 15px; }
-    .digital-num.red { color: #f87171; }
-
-    /* Calibración */
-    .cal-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 10px;
-    }
-    .cal-actions button {
-      flex: 1 1 110px;
-    }
-
-    /* Reporte RS/RST */
-    .mode-switch {
-      display: inline-flex;
-      background: #060b13;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 3px;
-      gap: 4px;
-    }
-    .mode-switch button {
-      padding: 6px 10px;
-      font-size: 11px;
-      font-family: var(--font-mono);
-      border: none;
-      background: transparent;
-      color: #94a3b8;
-      border-radius: 7px;
-    }
-    .mode-switch button.active {
-      background: rgba(6, 182, 212, 0.22);
-      color: #22d3ee;
-    }
-    .report-big {
-      font-family: var(--font-mono);
-      font-size: 54px;
-      font-weight: 800;
-      line-height: 1.05;
-      text-align: center;
-      color: #4ade80;
-      text-shadow: 0 0 14px rgba(34, 197, 94, 0.45);
-      margin: 6px 0 2px 0;
-    }
-    .report-big.over { color: #f87171; text-shadow: 0 0 14px rgba(239, 68, 68, 0.55); }
-    .report-over-tag {
-      text-align: center;
-      font-family: var(--font-mono);
-      font-size: 14px;
-      font-weight: 800;
-      color: #f87171;
-      min-height: 20px;
-    }
-    .phrase-box {
-      margin-top: 8px;
-      padding: 10px 12px;
-      border-radius: 10px;
-      background: rgba(0, 0, 0, 0.45);
-      border: 1px solid #18273e;
-      font-size: 13px;
-      color: #e2e8f0;
-      text-align: center;
-      line-height: 1.4;
-    }
-    .phrase-box small {
-      display: block;
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: #fbbf24;
-      text-transform: uppercase;
-      margin-bottom: 4px;
-    }
-
-    /* Botones de Legibilidad R */
-    .r-grid {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 6px;
-      margin-top: 8px;
-    }
-    .r-grid button {
-      padding: 8px 4px;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      border-radius: 9px;
-    }
-    .r-grid button.active {
-      background: rgba(6, 182, 212, 0.25);
-      color: #67e8f9;
-      border-color: rgba(6, 182, 212, 0.6);
-    }
-
-    /* Indicador CLIP */
-    .clip-pill {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      font-weight: 800;
-      padding: 2px 7px;
-      border-radius: 6px;
-      background: #111a2a;
-      color: #64748b;
-      border: 1px solid #1e2d45;
-    }
-    .clip-pill.active {
-      background: #dc2626;
-      color: #ffffff;
-      border-color: #fca5a5;
-      box-shadow: 0 0 10px rgba(239, 68, 68, 0.85);
-    }
-
-    /* Inputs y formularios */
-    input[type="text"], select, textarea {
-      width: 100%;
-      background: #060b13;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 12px;
-      color: #f1f5f9;
-      font-family: var(--font-sans);
-      font-size: 13px;
-      outline: none;
-    }
-    input[type="text"]:focus, select:focus, textarea:focus {
-      border-color: #22c55e;
-    }
-    .mono-input {
-      font-family: var(--font-mono);
-      text-transform: uppercase;
-    }
-
-    /* Grabador y Transcripción */
-    .rec-bar {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-    #rec-timer {
-      font-family: var(--font-mono);
-      font-size: 18px;
-      font-weight: 800;
-      padding: 8px 12px;
-      border-radius: 10px;
-      background: #060b13;
-      border: 1px solid var(--border);
-      color: #f8fafc;
-    }
-    audio {
-      width: 100%;
-      height: 40px;
-      margin-top: 8px;
-      color-scheme: dark;
-    }
-    .hidden {
-      display: none !important;
-    }
-
-    /* Tabla Mini Log UTC */
-    .log-form {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-    .log-form .full {
-      grid-column: 1 / -1;
-    }
-    .table-wrap {
-      width: 100%;
-      overflow-x: auto;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: #060b13;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 12px;
-    }
-    th, td {
-      padding: 8px 8px;
-      text-align: left;
-      border-bottom: 1px solid rgba(30, 45, 69, 0.65);
-      white-space: nowrap;
-    }
-    th {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      text-transform: uppercase;
-      color: #94a3b8;
-      background: #0d1626;
-    }
-    td.mono {
-      font-family: var(--font-mono);
-    }
-    .td-note {
-      white-space: normal;
-      min-width: 120px;
-      max-width: 220px;
-      color: #cbd5e1;
-    }
-    .call-edit {
-      background: transparent;
-      border: 1px solid transparent;
-      color: #4ade80;
-      font-family: var(--font-mono);
-      font-weight: 700;
-      font-size: 12px;
-      width: 96px;
-      padding: 3px 5px;
-      border-radius: 6px;
-      text-transform: uppercase;
-    }
-    .call-edit:focus {
-      background: #0b111b;
-      border-color: #22c55e;
-    }
-
-    footer {
-      text-align: center;
-      padding: 14px 12px 24px 12px;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: #64748b;
+    .log-row {
+      display: flex; justify-content: space-between; padding: 5px 0;
+      border-bottom: 1px solid #1e293b; color: #cbd5e1;
     }
   </style>
 </head>
 <body>
+<div class="wrap">
+  <div class="card top">
+    <div>
+      <div class="title">S-Meter Pro RX</div>
+      <div class="subclock">Monitor de Guardia &amp; Reportes RS</div>
+    </div>
+    <div class="clock-box">
+      <div class="utc" id="utcTime">--:--:-- UTC</div>
+      <div class="subclock" id="utcDate">----/--/-- | Local --:--:--</div>
+    </div>
+  </div>
 
-  <!-- Notificaciones Toast -->
-  <div id="toast-container"></div>
+  <div class="card">
+    <div class="controls">
+      <button id="btnMic" class="btn-mic">Activar Micrófono</button>
+      <button id="btnGuard" class="btn-guard">Modo Guardia: OFF</button>
+      <button id="btnSave" class="btn-log">Guardar Reporte UTC</button>
+    </div>
+    <div id="status" class="status" style="margin-top:8px;">Listo. Toca "Activar Micrófono" para comenzar.</div>
+    <div class="led-bar">
+      <div id="sqLed" class="led"></div>
+      <span id="sqText">SQUELCH CERRADO</span>
+    </div>
+  </div>
 
-  <!-- ===================================================================== -->
-  <!-- ENCABEZADO SDR + RELOJ UTC PRIORITARIO                                -->
-  <!-- ===================================================================== -->
-  <header>
-    <div class="header-inner">
-      <div class="brand">
-        <div class="brand-icon">RX</div>
-        <div>
-          <h1>S-Meter Pro RX <span class="badge-sdr">SDR</span></h1>
-          <p class="brand-sub">Monitor de guardia, S-Meter, reportes RS/RST y QSO</p>
-        </div>
+  <div class="meter-grid">
+    <div class="card">
+      <canvas id="meterCanvas" height="170"></canvas>
+      <div class="readout">
+        <div><div class="big-s" id="valS">S0</div><div class="lbl">SEÑAL</div></div>
+        <div><div class="big-rs" id="valRS">R1 S0</div><div class="lbl">REPORTE</div></div>
+        <div><div class="big-rs" id="valDb" style="color:#94a3b8;font-size:1.2rem;">-90 dB</div><div class="lbl">NIVEL</div></div>
       </div>
-
-      <!-- Reloj UTC Grande y siempre visible -->
-      <div class="clock-lcd">
-        <div>
-          <div class="utc-main">
-            <span id="utc-clock">00:00:00</span>
-            <span class="utc-tag">UTC</span>
-          </div>
-          <div id="utc-date">----/--/-- UTC</div>
+      <div class="sliders">
+        <div class="sl-item">
+          <label><span>Ganancia Mic</span><span id="lblGain">2.0x</span></label>
+          <input id="slGain" type="range" min="0.5" max="8" step="0.5" value="2" />
         </div>
-        <div class="clock-sep"></div>
-        <div class="local-box">
-          <div class="local-label">Local</div>
-          <div id="local-clock">00:00:00</div>
+        <div class="sl-item">
+          <label><span>Squelch</span><span id="lblSq">S3</span></label>
+          <input id="slSq" type="range" min="1" max="9" step="1" value="3" />
         </div>
       </div>
     </div>
-  </header>
 
-  <m
+    <div class="card" style="display:flex;flex-direction:column;gap:8px;">
+      <div class="lbl">FORMA DE ONDA (OSCILOSCOPIO)</div>
+      <canvas id="waveCanvas" height="95"></canvas>
+      <div class="lbl">ESPECTRO DE AUDIO (FFT)</div>
+      <canvas id="fftCanvas" height="110"></canvas>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span class="lbl" style="font-weight:700;">REGISTRO UTC (ÚLTIMOS REPORTES)</span>
+      <button id="btnCsv" style="flex:0;min-width:auto;padding:5px 10px;font-size:0.75rem;background:#1e293b;color:#cbd5e1;">Exportar CSV</button>
+    </div>
+    <div id="logList" class="log-list"></div>
+  </div>
+</div>
+
+<script>
+// 1. RELOJ UTC INDEPENDIENTE
+function updateClock() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const uH = pad(now.getUTCHours()), uM = pad(now.getUTCMinutes()), uS = pad(now.getUTCSeconds());
+  const uD = `${now.getUTCFullYear()}-${pad(now.getUTCMonth()+1)}-${pad(now.getUTCDate())}`;
+  const lT = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  document.getElementById('utcTime').textContent = `${uH}:${uM}:${uS} UTC`;
+  document.getElementById('utcDate').textContent = `${uD} | Local ${lT}`;
+}
+setInterval(updateClock, 250);
+updateClock();
+
+// 2. VARIABLES DE AUDIO Y ESTADO
+let audioCtx = null, stream = null, analyser = null, gainNode = null, rafId = null;
+let wakeLock = null, guardOn = false;
+let smoothS = 0, currentSLabel = 'S0', currentRS = 'R1 S0', currentDb = -90;
+let logs = [];
+try { logs = JSON.parse(localStorage.getItem('smeter_logs') || '[]'); } catch(e) {}
+
+const statusEl = document.getElementById('status');
+const btnMic = document.getElementById('btnMic');
+const btnGuard = document.getElementById('btnGuard');
+const slGain = document.getElementById('slGain');
+const slSq = document.getElementById('slSq');
+
+function setStatus(msg, cls='') {
+  statusEl.textContent = msg;
+  statusEl.className = 'status ' + cls;
+}
+
+// 3. ACTIVAR / DETENER MICRÓFONO (ANDROID SAFE)
+btnMic.addEventListener('click', async () => {
+  if (stream) { stopMic(); return; }
+  try {
+    setStatus('Solicitando permiso de micrófono...');
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    audioCtx = new AudioContextClass();
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
+
+    const src = audioCtx.createMediaStreamSource(stream);
+    gainNode = audioCtx.createGain();
+    gainNode.gain.value = parseFloat(slGain.value);
+
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 1024;
+    analyser.smoothingTimeConstant = 0.75;
+
+    // Mute gain a destination para evitar que Chrome Android duerma el grafo
+    const mute = audioCtx.createGain();
+    mute.gain.value = 0;
+
+    src.connect(gainNode);
+    gainNode.connect(analyser);
+    analyser.connect(mute);
+    mute.connect(audioCtx.destination);
+
+    btnMic.textContent = 'Detener Micrófono';
+    btnMic.classList.add('active');
+    setStatus('Micrófono ACTIVO — Recibiendo audio en vivo', 'ok');
+    loop();
+  } catch (err) {
+    setStatus('Error de micrófono: ' + err.name + ' - ' + err.message, 'err');
+  }
+});
+
+function stopMic() {
+  if (rafId) cancelAnimationFrame(rafId);
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  if (audioCtx) audioCtx.close();
+  stream = null; audioCtx = null; analyser = null;
+  btnMic.textContent = 'Activar Micrófono';
+  btnMic.classList.remove('active');
+  setStatus('Micrófono detenido.');
+}
+
+slGain.addEventListener('input', () => {
+  document.getElementById('lblGain').textContent = parseFloat(slGain.value).toFixed(1) + 'x';
+  if (gainNode) gainNode.gain.value = parseFloat(slGain.value);
+});
+slSq.addEventListener('input', () => {
+  document.getElementById('lblSq').textContent = 'S' + slSq.value;
+});
+
+// 4. MODO GUARDIA (WAKE LOCK)
+btnGuard.addEventListener('click', async () => {
+  guardOn = !guardOn;
+  btnGuard.classList.toggle('active', guardOn);
+  btnGuard.textContent = guardOn ? 'Modo Guardia: ON' : 'Modo Guardia: OFF';
+  if (guardOn && 'wakeLock' in navigator) {
+    try { wakeLock = await navigator.wakeLock.request('screen'); } catch(e) {}
+  } else if (wakeLock) {
+    try { await wakeLock.release(); wakeLock = null; } catch(e) {}
+  }
+});
+
+// 5. DIBUJO S-METER, ONDA Y ESPECTRO
+const mCan = document.getElementById('meterCanvas'), mCtx = mCan.getContext('2d');
+const wCan = document.getElementById('waveCanvas'), wCtx = wCan.getContext('2d');
+const fCan = document.getElementById('fftCanvas'), fCtx = fCan.getContext('2d');
+
+function drawMeter(sVal) {
+  const w = mCan.width = mCan.clientWidth || 300;
+  const h = mCan.height = 170;
+  mCtx.clearRect(0, 0, w, h);
+  const cx = w / 2, cy = h - 18, r = Math.min(w * 0.42, 130);
+
+  // Arco S1-S9 (verde/cyan) y +10/+60 (rojo)
+  mCtx.lineWidth = 10;
+  mCtx.beginPath(); mCtx.arc(cx, cy, r, Math.PI, Math.PI * 1.65);
+  mCtx.strokeStyle = '#0ea5e9'; mCtx.stroke();
+  mCtx.beginPath(); mCtx.arc(cx, cy, r, Math.PI * 1.65, Math.PI * 2);
+  mCtx.strokeStyle = '#ef4444'; mCtx.stroke();
+
+  // Etiquetas
+  const marks = ['1','3','5','7','9','+20','+40'];
+  mCtx.fillStyle = '#94a3b8'; mCtx.font = 'bold 11px monospace'; mCtx.textAlign = 'center';
+  marks.forEach((txt, i) => {
+    const ang = Math.PI + (i / (marks.length - 1)) * Math.PI;
+    mCtx.fillText(txt, cx + Math.cos(ang) * (r - 20), cy + Math.sin(ang) * (r - 20));
+  });
+
+  // Aguja (sVal de 0 a 15 -> S0 a S9+60)
+  const norm = Math.max(0, Math.min(1, sVal / 15));
+  const ang = Math.PI + norm * Math.PI;
+  mCtx.beginPath(); mCtx.moveTo(cx, cy);
+  mCtx.lineTo(cx + Math.cos(ang) * (r - 6), cy + Math.sin(ang) * (r - 6));
+  mCtx.strokeStyle = '#facc15'; mCtx.lineWidth = 3; mCtx.stroke();
+  mCtx.beginPath(); mCtx.arc(cx, cy, 6, 0, Math.PI * 2);
+  mCtx.fillStyle = '#e2e8f0'; mCtx.fill();
+}
+drawMeter(0);
+
+function loop() {
+  if (!analyser) return;
+  rafId = requestAnimationFrame(loop);
+
+  const timeData = new Float32Array(analyser.fftSize);
+  analyser.getFloatTimeDomainData(timeData);
+  const freqData = new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteFrequencyData(freqData);
+
+  // Calcular RMS -> dBFS -> Unidades S
+  let sum = 0;
+  for (let i = 0; i < timeData.length; i++) sum += timeData[i] * timeData[i];
+  const rms = Math.sqrt(sum / timeData.length);
+  const db = rms > 0.00001 ? 20 * Math.log10(rms) : -90;
+  currentDb = Math.round(db);
+
+  // Mapeo práctico: -70 dBFS = S1, -22 dBFS = S9 (6 dB por unidad S)
+  const rawS = Math.max(0, Math.min(15, (db + 76) / 6));
+  smoothS = smoothS * 0.75 + rawS * 0.25;
+
+  const sInt = Math.round(smoothS);
+  if (sInt <= 9) {
+    currentSLabel = 'S' + sInt;
+  } else {
+    currentSLabel = 'S9+' + ((sInt - 9) * 10);
+  }
+  const rVal = sInt >= 7 ? 5 : sInt >= 5 ? 4 : sInt >= 3 ? 3 : sInt >= 1 ? 2 : 1;
+  currentRS = `R${rVal} ${currentSLabel}`;
+
+  document.getElementById('valS').textContent = currentSLabel;
+  document.getElementById('valRS').textContent = currentRS;
+  document.getElementById('valDb').textContent = `${currentDb} dB`;
+  drawMeter(smoothS);
+
+  // Squelch
+  const sqOpen = smoothS >= parseInt(slSq.value, 10);
+  document.getElementById('sqLed').classList.toggle('on', sqOpen);
+  document.getElementById('sqText').textContent = sqOpen ? `RX ACTIVO (${currentRS})` : 'SQUELCH CERRADO';
+
+  // Onda
+  const ww = wCan.width = wCan.clientWidth || 300, wh = wCan.height = 95;
+  wCtx.clearRect(0, 0, ww, wh);
+  wCtx.strokeStyle = '#38bdf8'; wCtx.lineWidth = 1.5; wCtx.beginPath();
+  for (let i = 0; i < timeData.length; i++) {
+    const x = (i / timeData.length) * ww;
+    const y = (0.5 - timeData[i] * 0.48) * wh;
+    if (i === 0) wCtx.moveTo(x, y); else wCtx.lineTo(x, y);
+  }
+  wCtx.stroke();
+
+  // Espectro FFT
+  const fw = fCan.width = fCan.clientWidth || 300, fh = fCan.height = 110;
+  fCtx.clearRect(0, 0, fw, fh);
+  const bars = 64;
+  const bw = fw / bars;
+  for (let i = 0; i < bars; i++) {
+    const v = freqData[i * 2] / 255;
+    const bh = v * fh;
+    fCtx.fillStyle = v > 0.7 ? '#ef4444' : v > 0.4 ? '#facc15' : '#22c55e';
+    fCtx.fillRect(i * bw, fh - bh, bw - 1, bh);
+  }
+}
+
+// 6. MINI LOG UTC
+function renderLogs() {
+  const el = document.getElementById('logList');
+  if (!logs.length) { el.innerHTML = '<div class="subclock">Sin registros todavía.</div>'; return; }
+  el.innerHTML = logs.map(l =>
+    `<div class="log-row"><span>${l.utc}</span><span><b>${l.rs}</b> (${l.db} dB)</span></div>`
+  ).join('');
+}
+renderLogs();
+
+document.getElementById('btnSave').addEventListener('click', () => {
+  const now = new Date();
+  const utc = now.toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
+  logs.unshift({ utc, rs: currentRS, db: currentDb });
+  if (logs.length > 50) logs.pop();
+  try { localStorage.setItem('smeter_logs', JSON.stringify(logs)); } catch(e) {}
+  renderLogs();
+});
+
+document.getElementById('btnCsv').addEventListener('click', () => {
+  const csv = 'Fecha_Hora_UTC,Reporte_RS,Nivel_dBFS\n' + logs.map(l => `${l.utc},${l.rs},${l.db}`).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+  a.download = 'smeter_log_utc.csv';
+  a.click();
+});
+</script>
+</body>
+</html>
