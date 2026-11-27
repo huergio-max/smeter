@@ -395,4 +395,359 @@ function setStatus(msg, cls='') {
 function ensureAudioCtx() {
   if (!audioCtx) {
     const AC = window.AudioContext || window.webkitAudioContext;
-    a
+    audioCtx = new AC();
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  if (!gainNode) {
+    gainNode = audioCtx.createGain();
+    gainNode.gain.value = parseFloat(slGain.value);
+  }
+  if (!analyser) {
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 1024;
+    analyser.smoothingTimeConstant = 0.72;
+  }
+}
+
+// 5. MICRÓFONO (ANDROID SAFE)
+btnMic.addEventListener('click', async () => {
+  if (stream) { stopMic(); return; }
+  try {
+    setStatus('Solicitando permiso de micrófono...');
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    ensureAudioCtx();
+    const src = audioCtx.createMediaStreamSource(stream);
+    const mute = audioCtx.createGain();
+    mute.gain.value = 0;
+    src.connect(gainNode);
+    gainNode.connect(analyser);
+    analyser.connect(mute);
+    mute.connect(audioCtx.destination);
+
+    btnMic.textContent = 'Detener Micrófono';
+    btnMic.classList.add('active');
+    setStatus('Micrófono ACTIVO — Recibiendo audio en vivo', 'ok');
+    if (!rafId) loop();
+  } catch (err) {
+    setStatus('Error de micrófono: ' + err.name + ' - ' + err.message, 'err');
+  }
+});
+
+function stopMic() {
+  if (mediaRecorder && mediaRecorder.state === 'recording') stopRecording();
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  stream = null;
+  btnMic.textContent = 'Activar Micrófono';
+  btnMic.classList.remove('active');
+  setStatus('Micrófono detenido.');
+}
+
+// 6. SUBIR AUDIO
+document.getElementById('fileInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  currentAudioBlob = file;
+  const url = URL.createObjectURL(file);
+  audioPlayer.src = url;
+  audioPlayer.load();
+  btnDownload.href = url;
+  btnDownload.download = file.name;
+  btnDownload.classList.remove('hidden');
+
+  ensureAudioCtx();
+  if (!fileSourceNode) {
+    fileSourceNode = audioCtx.createMediaElementSource(audioPlayer);
+    fileSourceNode.connect(gainNode);
+    gainNode.connect(analyser);
+    analyser.connect(audioCtx.destination);
+  }
+  audioPlayer.play().catch(() => {});
+  setStatus('Reproduciendo audio cargado: ' + file.name, 'ok');
+  if (!rafId) loop();
+});
+
+// 7. GRABADOR DE QSO
+btnRec.addEventListener('click', () => {
+  if (mediaRecorder && mediaRecorder.state === 'recording') { stopRecording(); return; }
+  if (!stream) { setStatus('Primero activa el micrófono para grabar un QSO.', 'err'); return; }
+  recChunks = [];
+  let opts = {};
+  if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) opts = { mimeType: 'audio/webm;codecs=opus' };
+  else if (MediaRecorder.isTypeSupported('audio/webm')) opts = { mimeType: 'audio/webm' };
+  else if (MediaRecorder.isTypeSupported('audio/mp4')) opts = { mimeType: 'audio/mp4' };
+
+  mediaRecorder = new MediaRecorder(stream, opts);
+  mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recChunks.push(e.data); };
+  mediaRecorder.onstop = () => {
+    currentAudioBlob = new Blob(recChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+    const url = URL.createObjectURL(currentAudioBlob);
+    audioPlayer.src = url;
+    audioPlayer.load();
+    btnDownload.href = url;
+    btnDownload.download = `QSO_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.webm`;
+    btnDownload.classList.remove('hidden');
+    setStatus(`Grabación lista (${Math.round(currentAudioBlob.size/1024)} KB).`, 'ok');
+  };
+  mediaRecorder.start();
+  recSec = 0;
+  document.getElementById('recTimer').textContent = 'REC 00:00';
+  recInterval = setInterval(() => {
+    recSec++;
+    const m = String(Math.floor(recSec/60)).padStart(2,'0');
+    const s = String(recSec%60).padStart(2,'0');
+    document.getElementById('recTimer').textContent = `REC ${m}:${s}`;
+  }, 1000);
+  btnRec.textContent = 'Detener Grabación';
+  btnRec.classList.add('active');
+  setStatus('Grabando QSO...', 'ok');
+});
+
+function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+  clearInterval(recInterval);
+  document.getElementById('recTimer').textContent = '';
+  btnRec.textContent = 'Grabar QSO';
+  btnRec.classList.remove('active');
+}
+
+// 8. CALIBRACIÓN Y GUARDIA
+slGain.addEventListener('input', () => {
+  document.getElementById('lblGain').textContent = parseFloat(slGain.value).toFixed(1) + 'x';
+  if (gainNode) gainNode.gain.value = parseFloat(slGain.value);
+});
+slOffset.addEventListener('input', () => {
+  const v = parseInt(slOffset.value, 10);
+  document.getElementById('lblOffset').textContent = (v > 0 ? '+' : '') + v + ' dB';
+});
+slSq.addEventListener('input', () => {
+  document.getElementById('lblSq').textContent = 'S' + slSq.value;
+});
+document.getElementById('btnCalS1').addEventListener('click', () => {
+  const needed = Math.max(-30, Math.min(30, Math.round(-70 - rawDbNoOffset)));
+  slOffset.value = needed; slOffset.dispatchEvent(new Event('input'));
+  setStatus(`Piso calibrado a S1 (Offset ${needed} dB).`, 'ok');
+});
+document.getElementById('btnCalS9').addEventListener('click', () => {
+  const needed = Math.max(-30, Math.min(30, Math.round(-22 - rawDbNoOffset)));
+  slOffset.value = needed; slOffset.dispatchEvent(new Event('input'));
+  setStatus(`Referencia calibrada a S9 (Offset ${needed} dB).`, 'ok');
+});
+btnGuard.addEventListener('click', async () => {
+  guardOn = !guardOn;
+  btnGuard.classList.toggle('active', guardOn);
+  btnGuard.textContent = guardOn ? 'Modo Guardia: ON' : 'Modo Guardia: OFF';
+  if (guardOn && 'wakeLock' in navigator) {
+    try { wakeLock = await navigator.wakeLock.request('screen'); } catch(e) {}
+  } else if (wakeLock) {
+    try { await wakeLock.release(); wakeLock = null; } catch(e) {}
+  }
+});
+
+// 9. DIBUJO S-METER, ONDA Y ESPECTRO
+const mCan = document.getElementById('meterCanvas'), mCtx = mCan.getContext('2d');
+const wCan = document.getElementById('waveCanvas'), wCtx = wCan.getContext('2d');
+const fCan = document.getElementById('fftCanvas'), fCtx = fCan.getContext('2d');
+
+function drawMeter(sVal, pVal) {
+  const w = mCan.width = mCan.clientWidth || 300, h = mCan.height = 170;
+  mCtx.clearRect(0, 0, w, h);
+  const cx = w / 2, cy = h - 18, r = Math.min(w * 0.42, 130);
+  mCtx.lineWidth = 10;
+  mCtx.beginPath(); mCtx.arc(cx, cy, r, Math.PI, Math.PI * 1.6); mCtx.strokeStyle = '#0ea5e9'; mCtx.stroke();
+  mCtx.beginPath(); mCtx.arc(cx, cy, r, Math.PI * 1.6, Math.PI * 2); mCtx.strokeStyle = '#ef4444'; mCtx.stroke();
+
+  const marks = ['1','3','5','7','9','+20','+40','+60'];
+  mCtx.fillStyle = '#94a3b8'; mCtx.font = 'bold 11px monospace'; mCtx.textAlign = 'center';
+  marks.forEach((txt, i) => {
+    const ang = Math.PI + (i / (marks.length - 1)) * Math.PI;
+    mCtx.fillText(txt, cx + Math.cos(ang) * (r - 20), cy + Math.sin(ang) * (r - 20));
+  });
+  if (pVal > 0.2) {
+    const pAng = Math.PI + Math.min(1, pVal / 15) * Math.PI;
+    mCtx.beginPath();
+    mCtx.moveTo(cx + Math.cos(pAng) * (r - 12), cy + Math.sin(pAng) * (r - 12));
+    mCtx.lineTo(cx + Math.cos(pAng) * (r + 5), cy + Math.sin(pAng) * (r + 5));
+    mCtx.strokeStyle = '#ef4444'; mCtx.lineWidth = 3; mCtx.stroke();
+  }
+  const ang = Math.PI + Math.max(0, Math.min(1, sVal / 15)) * Math.PI;
+  mCtx.beginPath(); mCtx.moveTo(cx, cy);
+  mCtx.lineTo(cx + Math.cos(ang) * (r - 6), cy + Math.sin(ang) * (r - 6));
+  mCtx.strokeStyle = '#facc15'; mCtx.lineWidth = 3; mCtx.stroke();
+  mCtx.beginPath(); mCtx.arc(cx, cy, 6, 0, Math.PI * 2); mCtx.fillStyle = '#e2e8f0'; mCtx.fill();
+}
+drawMeter(0, 0);
+
+function loop() {
+  rafId = requestAnimationFrame(loop);
+  if (!analyser) return;
+  const timeData = new Float32Array(analyser.fftSize);
+  analyser.getFloatTimeDomainData(timeData);
+  const freqData = new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteFrequencyData(freqData);
+
+  let sum = 0;
+  for (let i = 0; i < timeData.length; i++) sum += timeData[i] * timeData[i];
+  const rms = Math.sqrt(sum / timeData.length);
+  rawDbNoOffset = rms > 0.00001 ? 20 * Math.log10(rms) : -90;
+  const db = rawDbNoOffset + parseInt(slOffset.value, 10);
+  currentDb = Math.round(db);
+
+  const rawS = Math.max(0, Math.min(15, (db + 76) / 6));
+  smoothS = smoothS * 0.72 + rawS * 0.28;
+  if (smoothS > peakS) { peakS = smoothS; peakHoldFrames = 45; }
+  else if (peakHoldFrames > 0) peakHoldFrames--;
+  else peakS = Math.max(smoothS, peakS - 0.08);
+
+  const sInt = Math.round(smoothS);
+  currentSLabel = sInt <= 9 ? 'S' + sInt : 'S9+' + ((sInt - 9) * 10);
+  const rVal = sInt >= 7 ? 5 : sInt >= 5 ? 4 : sInt >= 3 ? 3 : sInt >= 1 ? 2 : 1;
+  currentRS = selMode.value === 'RST' ? `R${rVal} ${currentSLabel} T9` : `R${rVal} ${currentSLabel}`;
+
+  document.getElementById('valS').textContent = currentSLabel;
+  document.getElementById('valRS').textContent = currentRS;
+  document.getElementById('valDb').textContent = `${currentDb} dB`;
+  drawMeter(smoothS, peakS);
+
+  const sqOpen = smoothS >= parseInt(slSq.value, 10);
+  document.getElementById('sqLed').classList.toggle('on', sqOpen);
+  document.getElementById('sqText').textContent = sqOpen ? `RX ACTIVO (${currentRS})` : 'SQUELCH CERRADO';
+
+  const ww = wCan.width = wCan.clientWidth || 300, wh = wCan.height = 95;
+  wCtx.clearRect(0, 0, ww, wh);
+  wCtx.strokeStyle = '#38bdf8'; wCtx.lineWidth = 1.5; wCtx.beginPath();
+  for (let i = 0; i < timeData.length; i++) {
+    const x = (i / timeData.length) * ww, y = (0.5 - timeData[i] * 0.48) * wh;
+    if (i === 0) wCtx.moveTo(x, y); else wCtx.lineTo(x, y);
+  }
+  wCtx.stroke();
+
+  const fw = fCan.width = fCan.clientWidth || 300, fh = fCan.height = 110;
+  fCtx.clearRect(0, 0, fw, fh);
+  const bars = 64, bw = fw / bars;
+  for (let i = 0; i < bars; i++) {
+    const v = freqData[i * 2] / 255, bh = v * fh;
+    fCtx.fillStyle = v > 0.7 ? '#ef4444' : v > 0.4 ? '#facc15' : '#22c55e';
+    fCtx.fillRect(i * bw, fh - bh, bw - 1, bh);
+  }
+}
+
+// 10. TRANSCRIPCIÓN EN VIVO + IA GEMINI
+let recognition = null, liveOn = false;
+const btnLiveTrans = document.getElementById('btnLiveTrans');
+btnLiveTrans.addEventListener('click', () => {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { setStatus('Tu navegador no soporta dictado en vivo.', 'err'); return; }
+  if (liveOn) { recognition.stop(); return; }
+  recognition = new SR();
+  recognition.lang = 'es-AR';
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.onstart = () => { liveOn = true; btnLiveTrans.textContent = 'Detener Transcripción'; btnLiveTrans.style.background = '#ef4444'; };
+  recognition.onresult = (e) => {
+    let txt = '';
+    for (let i = 0; i < e.results.length; i++) txt += e.results[i][0].transcript + ' ';
+    transText.value = txt.trim();
+  };
+  recognition.onend = () => { liveOn = false; btnLiveTrans.textContent = 'Transcribir en Vivo (Chrome)'; btnLiveTrans.style.background = ''; };
+  recognition.start();
+});
+
+const apiKeyInput = document.getElementById('apiKeyInput');
+try { apiKeyInput.value = localStorage.getItem('gemini_api_key') || ''; } catch(e) {}
+document.getElementById('btnSaveKey').addEventListener('click', () => {
+  try { localStorage.setItem('gemini_api_key', apiKeyInput.value.trim()); } catch(e) {}
+  setStatus('API Key guardada en este dispositivo.', 'ok');
+});
+
+document.getElementById('btnAiTrans').addEventListener('click', async () => {
+  const key = apiKeyInput.value.trim();
+  if (!currentAudioBlob) { setStatus('Primero graba un QSO o sube un audio.', 'err'); return; }
+  if (!key) { setStatus('Abre "Configurar API Key de Gemini" y pega tu clave gratuita.', 'err'); return; }
+  setStatus('Transcribiendo audio con Gemini IA...');
+  try {
+    const b64 = await new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onloadend = () => res(r.result.split(',')[1]);
+      r.onerror = rej;
+      r.readAsDataURL(currentAudioBlob);
+    });
+    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            { text: 'Transcribe fielmente este audio de radioaficionados en español. Respeta indicativos (callsigns), código fonético internacional, reportes RS/RST y códigos Q.' },
+            { inline_data: { mime_type: currentAudioBlob.type || 'audio/webm', data: b64 } }
+          ]
+        }]
+      })
+    });
+    const data = await resp.json();
+    const out = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (out) { transText.value = out; setStatus('Transcripción IA completada.', 'ok'); }
+    else setStatus('Error IA: ' + (data?.error?.message || 'Sin respuesta'), 'err');
+  } catch (err) {
+    setStatus('Error al transcribir: ' + err.message, 'err');
+  }
+});
+
+document.getElementById('btnCopyTrans').addEventListener('click', () => {
+  navigator.clipboard.writeText(transText.value || '');
+  setStatus('Transcripción copiada al portapapeles.', 'ok');
+});
+
+// 11. MINI LOG UTC
+function renderLogs() {
+  const el = document.getElementById('logList');
+  if (!logs.length) { el.innerHTML = '<div class="sub">Sin QSOs registrados todavía.</div>'; return; }
+  el.innerHTML = logs.map(l => `
+    <div class="log-row">
+      <div class="log-top">
+        <span>${l.call || 'SIN INDICATIVO'} ${l.freq ? '• ' + l.freq : ''}</span>
+        <span style="color:#facc15;">${l.rs} (${l.db} dB)</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;color:#94a3b8;">
+        <span>${l.utc}</span>
+        <span>${l.loc ? l.loc + ' | ' : ''}${l.notes || ''}</span>
+      </div>
+    </div>
+  `).join('');
+}
+renderLogs();
+
+document.getElementById('btnSaveLog').addEventListener('click', () => {
+  const now = new Date();
+  const utc = now.toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
+  const call = document.getElementById('inCall').value.trim().toUpperCase();
+  const freq = document.getElementById('inFreq').value.trim();
+  const notes = document.getElementById('inNotes').value.trim();
+  const loc = document.getElementById('callInfoBox').classList.contains('hidden') ? '' : document.getElementById('ciLoc').textContent;
+  logs.unshift({ utc, call, freq, rs: currentRS, db: currentDb, loc, notes });
+  if (logs.length > 100) logs.pop();
+  try { localStorage.setItem('smeter_logs_v2', JSON.stringify(logs)); } catch(e) {}
+  document.getElementById('inCall').value = '';
+  document.getElementById('inNotes').value = '';
+  document.getElementById('callInfoBox').classList.add('hidden');
+  renderLogs();
+  setStatus('QSO guardado en el Libro de Guardia UTC.', 'ok');
+});
+
+document.getElementById('btnCsv').addEventListener('click', () => {
+  const csv = 'Fecha_Hora_UTC,Indicativo,Ubicacion,Frecuencia,Reporte,dBFS,Notas\n' +
+    logs.map(l => `"${l.utc}","${l.call}","${l.loc||''}","${l.freq}","${l.rs}",${l.db},"${(l.notes||'').replace(/"/g,'""')}"`).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+  a.download = 'libro_guardia_utc.csv';
+  a.click();
+});
+
+document.getElementById('btnClearLog').addEventListener('click', () => {
+  if (!confirm('¿Borrar todos los registros del log?')) return;
+  logs = [];
+  try { localStorage.removeItem('smeter_logs_v2'); } catch(e) {}
+  renderLogs();
+});
+</script>
+</body>
+</html>
