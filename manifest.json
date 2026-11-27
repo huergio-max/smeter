@@ -1,0 +1,15 @@
+{
+  "name": "S-Meter Pro RX",
+  "short_name": "S-Meter RX",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#060b14",
+  "theme_color": "#060b14",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3659/3659899.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
